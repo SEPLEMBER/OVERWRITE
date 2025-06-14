@@ -1,34 +1,14 @@
-/*
- * This file is part of SimpleTextCrypt.
- * Copyright (c) 2015-2020, Aidin Gharibnavaz <aidin@aidinhut.com>
- *
- * SimpleTextCrypt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SimpleTextCrypt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with SimpleTextCrypt.  If not, see <http://www.gnu.org/licenses/>.
- */
 package com.aidinhut.simpletextcrypt;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.ClipboardManager;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,9 +17,10 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.text.util.LinkifyCompat;
+import android.text.util.Linkify;
 
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -64,14 +44,12 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            // Showing settings activity, when `Settings' menu item clicked.
             Intent settingsIntent = new Intent(this, SettingsActivity.class);
             startActivity(settingsIntent);
             return true;
         }
 
         if (id == R.id.action_about) {
-            // Showing about message.
             showAbout();
         }
 
@@ -80,33 +58,35 @@ public class MainActivity extends AppCompatActivity {
 
     public void onEncryptButtonClicked(View view) {
         try {
-            setText(Crypter.encrypt(getEncryptionKey(), getText()));
-        }
-        catch (Exception error) {
+            String key = getEncryptionKey();
+            setText(Crypter.encrypt(key.toCharArray(), getText()));
+        } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
         }
     }
 
     public void onDecryptButtonClicked(View view) {
         try {
-            setText(Crypter.decrypt(getEncryptionKey(), getText()));
-        }
-        catch (Exception error) {
+            String key = getEncryptionKey();
+            setText(Crypter.decrypt(key.toCharArray(), getText()));
+        } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
         }
     }
 
     public void onCopyButtonClicked(View view) {
-        ClipboardManager clipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
-
-        clipboard.setText(getText());
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Encrypted Text", getText());
+        clipboard.setPrimaryClip(clip);
     }
 
     public void onPasteButtonClicked(View view) {
-        ClipboardManager clipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
-
-        if (clipboard.hasText()) {
-            setText(clipboard.getText().toString());
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard.hasPrimaryClip()) {
+            ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+            if (item.getText() != null) {
+                setText(item.getText().toString());
+            }
         }
     }
 
@@ -119,15 +99,11 @@ public class MainActivity extends AppCompatActivity {
         int timeout = SettingsManager.getInstance().getLockTimeout(this);
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout != 0 && currentTime - lastActivity >= timeout * 60) {
-            // Empty the text box, to protect privacy.
             setText("");
-
-            // Finishing this activity, to get back to the lock screen.
             finish();
         } else {
             this.lastActivity = System.currentTimeMillis() / 1000;
         }
-
         super.onResume();
     }
 
@@ -136,53 +112,35 @@ public class MainActivity extends AppCompatActivity {
         int timeout = SettingsManager.getInstance().getLockTimeout(this);
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout == 0 || currentTime - lastActivity >= timeout * 60) {
-            // Empty the text box, to protect privacy.
             setText("");
-
-            // Finishing this activity, to get back to the lock screen.
             finish();
         }
-
         super.onPause();
     }
 
-    /*
-     * Returns the text inside the Text Box.
-     */
     private String getText() {
-        EditText textBox = (EditText)findViewById(R.id.editText);
+        EditText textBox = (EditText) findViewById(R.id.editText);
         return textBox.getText().toString();
     }
 
-    /*
-     * Sets the specified text in the Text Box.
-     */
     private void setText(String input) {
-        EditText textBox = (EditText)findViewById(R.id.editText);
+        EditText textBox = (EditText) findViewById(R.id.editText);
         textBox.setText(input);
     }
 
-    /*
-     * Returns the encryption key from settings.
-     */
     private String getEncryptionKey() throws UnsupportedEncodingException,
-            GeneralSecurityException,
-            EncryptionKeyNotSet {
+            GeneralSecurityException, EncryptionKeyNotSet {
         String encKey = SettingsManager.getInstance().getEncryptionKey(this);
-
-        if (encKey == "") {
+        if (encKey.isEmpty()) {
             throw new EncryptionKeyNotSet(this);
         }
-
         return encKey;
     }
 
     private void showAbout() {
-        // To align the text at the center, and make it scrollable, I created a custom view
-        // for the message dialog.
         TextView messageTextView = new TextView(this);
         messageTextView.setLinksClickable(true);
-        messageTextView.setAutoLinkMask(Linkify.WEB_URLS);
+        LinkifyCompat.addLinks(messageTextView, Linkify.WEB_URLS);
         messageTextView.setText(String.format("%s\n\n%s\n\n%s\n%s\n\n%s",
                 this.getString(R.string.about_copyright),
                 this.getString(R.string.about_source),
@@ -202,5 +160,4 @@ public class MainActivity extends AppCompatActivity {
 
         dialogBuilder.show();
     }
-
 }
