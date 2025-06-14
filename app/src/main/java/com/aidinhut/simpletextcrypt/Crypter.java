@@ -1,4 +1,3 @@
-```java
 package com.aidinhut.simpletextcrypt;
 
 import android.util.Base64;
@@ -67,4 +66,3 @@ public class Crypter {
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
 }
-```
