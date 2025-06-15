@@ -1,99 +1,194 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+package com.aidinhut.simpletextcrypt;
 
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView"
-        android:layout_alignParentBottom="false"
-        android:fillViewport="false"
-        android:layout_above="@+id/encryptButtonsLayout"
-        android:layout_alignParentTop="true">
+import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.text.util.LinkifyCompat;
+import android.text.util.Linkify;
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:id="@+id/editText"
-            android:editable="false"
-            android:enabled="true"
-            android:minHeight="60dp"
-            android:gravity="top" />
-    </ScrollView>
+import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:id="@+id/encryptButtonsLayout"
-        android:layout_above="@+id/copyButtonsLayout">
+public class MainActivity extends AppCompatActivity {
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/encrypt_button_text"
-            android:id="@+id/encryptButton"
-            android:layout_margin="5dp"
-            android:onClick="onEncryptButtonClicked" />
+    private Long lastActivity;
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/decrypt_button_text"
-            android:id="@+id/decryptButton"
-            android:layout_margin="5dp"
-            android:onClick="onDecryptButtonClicked" />
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        this.lastActivity = System.currentTimeMillis() / 1000;
+    }
 
-    </LinearLayout>
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/copyButtonsLayout"
-        android:layout_alignParentTop="false"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="false">
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/copy_button_text"
-            android:id="@+id/copyButton"
-            android:layout_margin="5dp"
-            android:onClick="onCopyButtonClicked" />
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/paste_button_text"
-            android:id="@+id/pasteButton"
-            android:layout_margin="5dp"
-            android:onClick="onPasteButtonClicked" />
+        if (id == R.id.action_about) {
+            showAbout();
+        }
 
-        <Button
-            android:id="@+id/clearButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:onClick="onClearButtonClicked"
-            android:text="@string/clear_button" />
-    </LinearLayout>
+        return super.onOptionsItemSelected(item);
+    }
 
-    <Button
-        android:id="@+id/exitButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="@string/exit_button"
-        android:onClick="onExitButtonClicked"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+    public void onEncryptButtonClicked(View view) {
+        new CryptoTask(true).execute(getText(), getEncryptionKey());
+    }
 
-</RelativeLayout>
+    public void onDecryptButtonClicked(View view) {
+        new CryptoTask(false).execute(getText(), getEncryptionKey());
+    }
+
+    public void onCopyButtonClicked(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Encrypted Text", getText());
+        clipboard.setPrimaryClip(clip);
+    }
+
+    public void onPasteButtonClicked(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard.hasPrimaryClip()) {
+            ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+            if (item.getText() != null) {
+                setText(item.getText().toString());
+            }
+        }
+    }
+
+    public void onClearButtonClicked(View view) {
+        setText("");
+    }
+
+    public void onExitButtonClicked(View view) {
+        Crypter.getInstance().clearCache();
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        for (int i = 1; i <= 30; i++) {
+            ClipData clip = ClipData.newPlainText("Clear", String.valueOf(i));
+            clipboard.setPrimaryClip(clip);
+        }
+        finish();
+    }
+
+    @Override
+    protected void onResume() {
+        int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
+        long currentTime = System.currentTimeMillis() / 1000;
+        if (timeout != 0 && currentTime - lastActivity >= timeout * 60) {
+            setText("");
+            finish();
+        } else {
+            this.lastActivity = System.currentTimeMillis() / 1000;
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
+        long currentTime = System.currentTimeMillis() / 1000;
+        if (timeout == 0 || currentTime - lastActivity >= timeout * 60) {
+            setText("");
+            finish();
+        }
+        super.onPause();
+    }
+
+    private String getText() {
+        EditText textBox = findViewById(R.id.editText);
+        return textBox.getText().toString();
+    }
+
+    private void setText(String input) {
+        EditText textBox = findViewById(R.id.editText);
+        textBox.setText(input);
+    }
+
+    private String getEncryptionKey() {
+        String encKey = SettingsManager.getInstance(this).getEncryptionKey(this);
+        if (encKey.isEmpty()) {
+            throw new EncryptionKeyNotSet(this);
+        }
+        return encKey;
+    }
+
+    private void showAbout() {
+        TextView messageTextView = new TextView(this);
+        messageTextView.setLinksClickable(true);
+        LinkifyCompat.addLinks(messageTextView, Linkify.WEB_URLS);
+        messageTextView.setText(String.format("%s\n\n%s\n\n%s\n%s\n\n%s",
+                getString(R.string.about_copyright),
+                getString(R.string.about_source),
+                getString(R.string.about_license_1),
+                getString(R.string.about_license_2),
+                getString(R.string.about_license_3)));
+        messageTextView.setPadding(10, 10, 10, 10);
+        messageTextView.setGravity(Gravity.CENTER);
+
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.addView(messageTextView);
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setView(scrollView);
+        dialogBuilder.setPositiveButton("OK", null);
+        dialogBuilder.setCancelable(true);
+
+        dialogBuilder.show();
+    }
+
+    private class CryptoTask extends AsyncTask<String, Void, String> {
+        private final boolean isEncrypt;
+        private Exception error;
+
+        CryptoTask(boolean isEncrypt) {
+            this.isEncrypt = isEncrypt;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                String input = params[0];
+                String key = params[1];
+                long start = System.currentTimeMillis();
+                String result = isEncrypt ? Crypter.getInstance().encrypt(key.toCharArray(), input) : Crypter.getInstance().decrypt(key.toCharArray(), input);
+                Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
+                return result;
+            } catch (Exception e) {
+                error = e;
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (error != null) {
+                Utilities.showErrorMessage(error.getMessage(), MainActivity.this);
+            } else {
+                setText(result);
+            }
+        }
+    }
+}
