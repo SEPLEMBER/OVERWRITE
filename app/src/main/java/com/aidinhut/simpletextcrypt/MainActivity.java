@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,8 +18,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.util.LinkifyCompat;
-import androidx.lifecycle.Lifecycle;
-import android.text.util.Linkify;
 
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 
@@ -49,9 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtra("lockscreen_password", getIntent().getStringExtra("lockscreen_password"));
-            startActivity(intent);
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
         if (id == R.id.action_about) {
@@ -196,6 +193,9 @@ public class MainActivity extends AppCompatActivity {
                 String key = getEncryptionKey();
                 long start = System.currentTimeMillis();
                 String result = isEncrypt ? Crypter.getInstance().encrypt(key.toCharArray(), input) : Crypter.getInstance().decrypt(key.toCharArray(), input);
+                if (BuildConfig.DEBUG) {
+                    Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
+                }
                 return result;
             } catch (Exception e) {
                 error = e;
