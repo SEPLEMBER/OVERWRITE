@@ -15,9 +15,12 @@ import java.security.SecureRandom;
 public class SettingsManager {
     private static SettingsManager instance;
     private SharedPreferences preferences;
+    private static final String DEFAULT_ENCRYPTION_KEY = "1111111111";
+    private static final String DEFAULT_LOCKSCREEN_PASSWORD = "12345678";
 
     private SettingsManager(Context context) {
         preferences = context.getSharedPreferences(Constants.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        initializeDefaultEncryptionKey(context);
     }
 
     public static SettingsManager getInstance(Context context) {
@@ -25,6 +28,21 @@ public class SettingsManager {
             instance = new SettingsManager(context);
         }
         return instance;
+    }
+
+    private void initializeDefaultEncryptionKey(Context context) {
+        // Проверяем, установлен ли ключ шифрования
+        if (!preferences.contains("encrypted_encryption_key")) {
+            try {
+                // Устанавливаем пароль экрана блокировки по умолчанию
+                setLockscreenPassword(DEFAULT_LOCKSCREEN_PASSWORD, context);
+                // Устанавливаем ключ шифрования по умолчанию
+                setEncryptionKey(DEFAULT_ENCRYPTION_KEY, DEFAULT_LOCKSCREEN_PASSWORD, context);
+            } catch (Exception e) {
+                // Логируем ошибку, но не прерываем работу
+                android.util.Log.e("SettingsManager", "Failed to initialize default encryption key: " + e.getMessage());
+            }
+        }
     }
 
     public void setLockscreenPassword(String password, Context context) throws Exception {
@@ -44,7 +62,7 @@ public class SettingsManager {
         String storedSaltBase64 = preferences.getString("lockscreen_salt", null);
         String storedHash = preferences.getString("lockscreen_hash", null);
         if (storedSaltBase64 == null || storedHash == null) {
-            return password.equals("12345678"); // Default password
+            return password.equals(DEFAULT_LOCKSCREEN_PASSWORD); // Default password
         }
         byte[] salt = Base64.decode(storedSaltBase64, Base64.DEFAULT);
         String computedHash = computeHash(password, salt);
