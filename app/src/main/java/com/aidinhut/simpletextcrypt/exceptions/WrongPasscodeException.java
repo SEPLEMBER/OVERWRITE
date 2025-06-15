@@ -10,6 +10,6 @@ import com.aidinhut.simpletextcrypt.R;
 public class WrongPasscodeException extends Exception {
 
     public WrongPasscodeException(Context context) {
-        super(context.getString(R.string.wrong_passcode_error));
+        super(context.getString(R.string.wrong_lockscreen_password_error));
     }
 }
