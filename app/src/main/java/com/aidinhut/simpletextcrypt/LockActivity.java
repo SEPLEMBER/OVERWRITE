@@ -35,18 +35,22 @@ public class LockActivity extends AppCompatActivity {
     }
 
     private void unlock() {
-        EditText passcodeBox = (EditText)findViewById(R.id.passcodeEditText);
-        String passcode = passcodeBox.getText().toString();
+        EditText passcodeBox = findViewById(R.id.passcodeEditText);
+        String enteredPassword = passcodeBox.getText().toString();
         passcodeBox.setText("");
 
-        String savedPasscode = SettingsManager.getInstance(this).getPasscode(this);
-
-        if (savedPasscode.compareTo(passcode) != 0) {
-            Utilities.showErrorMessage(getString(R.string.wrong_passcode_error), this);
-            return;
+        try {
+            if (!SettingsManager.getInstance(this).verifyLockscreenPassword(enteredPassword)) {
+                Utilities.showErrorMessage(getString(R.string.wrong_lockscreen_password_error), this);
+                return;
+            }
+            String decryptedEncryptionKey = SettingsManager.getInstance(this).getDecryptedEncryptionKey(enteredPassword, this);
+            Intent newIntent = new Intent(this, MainActivity.class);
+            newIntent.putExtra("encryption_key", decryptedEncryptionKey);
+            startActivity(newIntent);
+            finish();
+        } catch (Exception e) {
+            Utilities.showErrorMessage(e.getMessage(), this);
         }
-
-        Intent newIntent = new Intent(this, MainActivity.class);
-        startActivity(newIntent);
     }
 }
