@@ -23,6 +23,7 @@
     <string name="about_license_2">SimpleTextCrypt est distribué dans l\'espoir qu\'il sera utile, mais SANS AUCUNE GARANTIE ; sans même la garantie implicite de COMMERCIALISATION ou d\'ADÉQUATION À UN USAGE PARTICULIER. Voir la Licence Publique Générale GNU pour plus de détails.</string>
     <string name="about_license_3">Une copie de la Licence Publique Générale GNU est distribuée avec le code source de SimpleTextCrypt. Vous pouvez également en trouver une copie ici : <a href="https://www.gnu.org/licenses/gpl-3.0.html">https://www.gnu.org</a></string>
     <string name="default_passcode">Le mot de passe par défaut de l\'écran de verrouillage est : 12345678. La clé de chiffrement par défaut est : 1111111111.</string>
+    <string name="default_passcode_warning">Vous utilisez le mot de passe par défaut de l\'écran de verrouillage. Veuillez le changer pour des raisons de sécurité.</string>
     <string name="encrypt_button_text">Chiffrer</string>
     <string name="decrypt_button_text">Déchiffrer</string>
     <string name="copy_button_text">Copier</string>
