@@ -15,11 +15,10 @@ import java.security.SecureRandom;
 public class SettingsManager {
     private static SettingsManager instance;
     private SharedPreferences preferences;
-    private static final String DEFAULT_ENCRYPTION_KEY = "1111111111";
-    private static final String DEFAULT_LOCKSCREEN_PASSWORD = "12345678";
 
     private SettingsManager(Context context) {
         preferences = context.getSharedPreferences(Constants.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        // Инициализация ключа шифрования по умолчанию, если он не установлен
         initializeDefaultEncryptionKey(context);
     }
 
@@ -28,21 +27,6 @@ public class SettingsManager {
             instance = new SettingsManager(context);
         }
         return instance;
-    }
-
-    private void initializeDefaultEncryptionKey(Context context) {
-        // Проверяем, установлен ли ключ шифрования
-        if (!preferences.contains("encrypted_encryption_key")) {
-            try {
-                // Устанавливаем пароль экрана блокировки по умолчанию
-                setLockscreenPassword(DEFAULT_LOCKSCREEN_PASSWORD, context);
-                // Устанавливаем ключ шифрования по умолчанию
-                setEncryptionKey(DEFAULT_ENCRYPTION_KEY, DEFAULT_LOCKSCREEN_PASSWORD, context);
-            } catch (Exception e) {
-                // Логируем ошибку, но не прерываем работу
-                android.util.Log.e("SettingsManager", "Failed to initialize default encryption key: " + e.getMessage());
-            }
-        }
     }
 
     public void setLockscreenPassword(String password, Context context) throws Exception {
@@ -62,7 +46,7 @@ public class SettingsManager {
         String storedSaltBase64 = preferences.getString("lockscreen_salt", null);
         String storedHash = preferences.getString("lockscreen_hash", null);
         if (storedSaltBase64 == null || storedHash == null) {
-            return password.equals(DEFAULT_LOCKSCREEN_PASSWORD); // Default password
+            return password.equals(Constants.DEFAULT_LOCKSCREEN_PASSWORD);
         }
         byte[] salt = Base64.decode(storedSaltBase64, Base64.DEFAULT);
         String computedHash = computeHash(password, salt);
@@ -101,7 +85,11 @@ public class SettingsManager {
         String ivBase64 = preferences.getString("encryption_iv", null);
         String encryptedBase64 = preferences.getString("encrypted_encryption_key", null);
         if (encryptionSaltBase64 == null || ivBase64 == null || encryptedBase64 == null) {
-            throw new Exception(context.getString(R.string.no_encryption_key_set_error));
+            // Устанавливаем ключ по умолчанию, если он отсутствует
+            initializeDefaultEncryptionKey(context);
+            encryptionSaltBase64 = preferences.getString("encryption_salt", null);
+            ivBase64 = preferences.getString("encryption_iv", null);
+            encryptedBase64 = preferences.getString("encrypted_encryption_key", null);
         }
         byte[] encryptionSalt = Base64.decode(encryptionSaltBase64, Base64.DEFAULT);
         byte[] iv = Base64.decode(ivBase64, Base64.DEFAULT);
@@ -124,6 +112,17 @@ public class SettingsManager {
             preferences.edit().putInt(Constants.LOCK_TIMEOUT_SETTINGS_KEY, timeoutInt).apply();
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid lock timeout value");
+        }
+    }
+
+    private void initializeDefaultEncryptionKey(Context context) {
+        if (preferences.getString("encrypted_encryption_key", null) == null) {
+            try {
+                setEncryptionKey(Constants.DEFAULT_ENCRYPTION_KEY, Constants.DEFAULT_LOCKSCREEN_PASSWORD, context);
+            } catch (Exception e) {
+                // Логируем ошибку, но не прерываем выполнение
+                android.util.Log.e("SettingsManager", "Failed to set default encryption key", e);
+            }
         }
     }
 
