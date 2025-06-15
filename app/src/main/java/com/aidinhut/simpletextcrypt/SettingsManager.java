@@ -139,7 +139,7 @@ public class SettingsManager {
     }
 
     private String computeHash(String password, byte[] salt) throws Exception {
-        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 1000, 256);
+        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 45000, 256);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         byte[] hash = skf.generateSecret(spec).getEncoded();
         return Base64.encodeToString(hash, Base64.NO_WRAP);
