@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     public void onExitButtonClicked(View view) {
         Crypter.getInstance().clearCache();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        for (int i = 1; i <= 30; i++) {
+        for (int i = 1; i <= 45; i++) {
             ClipData clip = ClipData.newPlainText("Clear", String.valueOf(i));
             clipboard.setPrimaryClip(clip);
         }
