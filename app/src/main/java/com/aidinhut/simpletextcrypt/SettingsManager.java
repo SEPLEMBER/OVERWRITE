@@ -53,7 +53,7 @@ public class SettingsManager {
 
     public void setEncryptionKey(String encryptionKey, String lockscreenPassword, Context context) throws Exception {
         if (encryptionKey == null || encryptionKey.length() < 8) {
-            throw new IllegalArgumentException(context.getString(R.string.invalid_encryption_key_error));
+            throw new IllegalArgumentException(context.getString(R.string.invalid_key_length_error));
         }
         if (!verifyLockscreenPassword(lockscreenPassword)) {
             throw new SecurityException(context.getString(R.string.wrong_lockscreen_password_error));
