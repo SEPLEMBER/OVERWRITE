@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        int timeout = SettingsManager.getInstance().getLockTimeout(this);
+        int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout != 0 && currentTime - lastActivity >= timeout * 60) {
             setText("");
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        int timeout = SettingsManager.getInstance().getLockTimeout(this);
+        int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout == 0 || currentTime - lastActivity >= timeout * 60) {
             setText("");
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String getEncryptionKey() throws UnsupportedEncodingException,
             GeneralSecurityException, EncryptionKeyNotSet {
-        String encKey = SettingsManager.getInstance().getEncryptionKey(this);
+        String encKey = SettingsManager.getInstance(this).getEncryptionKey(this);
         if (encKey.isEmpty()) {
             throw new EncryptionKeyNotSet(this);
         }
