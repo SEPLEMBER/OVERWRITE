@@ -29,18 +29,17 @@ public class LockActivity extends AppCompatActivity {
             targetIntent = new Intent(this, MainActivity.class);
         }
 
-        ((EditText)findViewById(R.id.passcodeEditText)).setOnEditorActionListener(
-                new TextView.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        if (actionId == EditorInfo.IME_ACTION_DONE) {
-                            unlock();
-                            return true;
-                        }
-                        return false;
-                    }
+        EditText passcodeEditText = findViewById(R.id.passcodeEditText);
+        passcodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    unlock();
+                    return true;
                 }
-        );
+                return false;
+            }
+        });
     }
 
     public void onUnlockButtonClicked(View view) {
