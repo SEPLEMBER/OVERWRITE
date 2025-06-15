@@ -24,12 +24,18 @@ import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 public class MainActivity extends AppCompatActivity {
 
     private Long lastActivity;
+    private String encryptionKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         lastActivity = System.currentTimeMillis() / 1000;
+        encryptionKey = getIntent().getStringExtra("encryption_key");
+        if (encryptionKey == null) {
+            startActivity(new Intent(this, LockActivity.class));
+            finish();
+        }
     }
 
     @Override
@@ -82,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onExitButtonClicked(View view) {
         Crypter.getInstance().clearCache();
+        encryptionKey = null;
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         for (int i = 1; i <= 45; i++) {
             ClipData clip = ClipData.newPlainText("Clear", String.valueOf(i));
@@ -96,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout != 0 && currentTime - lastActivity >= timeout * 60) {
             setText("");
+            encryptionKey = null;
+            startActivity(new Intent(this, LockActivity.class));
             finish();
         } else {
             lastActivity = System.currentTimeMillis() / 1000;
@@ -109,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout == 0 || currentTime - lastActivity >= timeout * 60) {
             setText("");
+            encryptionKey = null;
+            startActivity(new Intent(this, LockActivity.class));
             finish();
         }
         super.onPause();
@@ -125,11 +136,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getEncryptionKey() throws EncryptionKeyNotSet {
-        String encKey = SettingsManager.getInstance(this).getEncryptionKey(this);
-        if (encKey.isEmpty()) {
+        if (encryptionKey == null || encryptionKey.isEmpty()) {
             throw new EncryptionKeyNotSet(this);
         }
-        return encKey;
+        return encryptionKey;
     }
 
     private void showAbout() {
