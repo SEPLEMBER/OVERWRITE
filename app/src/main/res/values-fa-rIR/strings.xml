@@ -15,6 +15,7 @@
     <string name="wrong_lockscreen_password_error">رمز عبور صفحه قفل وارد شده اشتباه است.</string>
     <string name="encryption_key_label">کلید رمزنگاری (از یک کلید پیچیده استفاده کنید، مثلاً "jn@32+iQm9")</string>
     <string name="lockscreen_password_label">رمز عبور صفحه قفل</string>
+    <string name="passcode_hint">رمز عبور صفحه قفل را وارد کنید</string>
     <string name="about_title">درباره SimpleTextCrypt</string>
     <string name="about_copyright">کپی‌رایت © ۲۰۱۵–۲۰۲۰ آیدین قریب‌نواز</string>
     <string name="about_source">کد منبع برنامه را می‌توانید اینجا پیدا کنید: https://github.com/aidin36/simpletextcrypt</string>
@@ -31,4 +32,7 @@
     <string name="clear_button">پاک کردن</string>
     <string name="save_button">ذخیره</string>
     <string name="exit_button">خروج</string>
+    <string name="lockscreen_password_set_hint">رمز عبور سفارشی صفحه قفل تنظیم شده است. برای تغییر رمز جدید وارد کنید.</string>
+    <string name="clipboard_history_warning">حافظه کلیپ‌بورد پاک شد. برای امنیت کامل، تاریخچه کلیپ‌بورد را در تنظیمات دستگاه غیرفعال کنید.</string>
+    <string name="clipboard_restricted">دسترسی به کلیپ‌بورد در پس‌زمینه محدود شده است</string>
 </resources>
