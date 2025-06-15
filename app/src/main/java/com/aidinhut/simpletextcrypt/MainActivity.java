@@ -6,6 +6,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -17,7 +18,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.util.LinkifyCompat;
-import android.text.util.Linkify;
 
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 
@@ -67,12 +67,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onCopyButtonClicked(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !isInForeground()) {
+            Utilities.showErrorMessage(getString(R.string.clipboard_restricted), this);
+            return;
+        }
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Encrypted Text", getText());
         clipboard.setPrimaryClip(clip);
     }
 
     public void onPasteButtonClicked(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !isInForeground()) {
+            Utilities.showErrorMessage(getString(R.string.clipboard_restricted), this);
+            return;
+        }
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboard.hasPrimaryClip()) {
             ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
@@ -94,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
             ClipData clip = ClipData.newPlainText("Clear", String.valueOf(i));
             clipboard.setPrimaryClip(clip);
         }
+        Utilities.showErrorMessage(getString(R.string.clipboard_history_warning), this);
         finish();
     }
 
@@ -165,6 +174,10 @@ public class MainActivity extends AppCompatActivity {
         dialogBuilder.show();
     }
 
+    private boolean isInForeground() {
+        return getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+    }
+
     private class CryptoTask extends AsyncTask<String, Void, String> {
         private final boolean isEncrypt;
         private Exception error;
@@ -180,7 +193,9 @@ public class MainActivity extends AppCompatActivity {
                 String key = getEncryptionKey();
                 long start = System.currentTimeMillis();
                 String result = isEncrypt ? Crypter.getInstance().encrypt(key.toCharArray(), input) : Crypter.getInstance().decrypt(key.toCharArray(), input);
-                Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
+                if (BuildConfig.DEBUG) {
+                    Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
+                }
                 return result;
             } catch (Exception e) {
                 error = e;
@@ -191,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             if (error != null) {
+                setText("");
                 Utilities.showErrorMessage(error.getMessage(), MainActivity.this);
             } else {
                 setText(result);
