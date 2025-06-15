@@ -17,7 +17,7 @@
         android:id="@+id/encryptionKeyEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
+        android:inputType="textVisiblePassword"
         android:hint="@string/encryption_key_label" />
 
     <Button
@@ -37,7 +37,7 @@
         android:id="@+id/passcodeEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
+        android:inputType="textVisiblePassword"
         android:hint="@string/lockscreen_password_label" />
 
     <TextView
