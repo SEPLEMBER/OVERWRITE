@@ -1,5 +1,6 @@
 package com.aidinhut.simpletextcrypt;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -60,24 +61,33 @@ public class SettingsActivity extends AppCompatActivity {
         EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
         EditText lockscreenPasswordTextBox = findViewById(R.id.passcodeEditText);
         EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEdit);
-        String lockscreenPassword;
+        String lockscreenPassword = null;
+        String currentKey = null;
 
         try {
             // Получаем пароль экрана блокировки из Intent
             lockscreenPassword = getIntent().getStringExtra("lockscreen_password");
             if (lockscreenPassword == null) {
-                // Если пароль не передан, используем дефолтный (для первой установки)
-                lockscreenPassword = Constants.DEFAULT_LOCKSCREEN_PASSWORD;
-                lockscreenPasswordTextBox.setHint(R.string.lockscreen_password_set_hint);
+                // Проверяем, установлен ли пользовательский пароль
+                if (!SettingsManager.getInstance(this).hasCustomLockscreenPassword()) {
+                    startActivity(new Intent(this, LockActivity.class));
+                    finish();
+                    return;
+                }
+                // Если пароль не передан, но пользовательский пароль есть, требуем ввод
+                startActivity(new Intent(this, LockActivity.class));
+                finish();
+                return;
             }
+
+            // Проверяем, является ли пароль дефолтным
             if (lockscreenPassword.equals(Constants.DEFAULT_LOCKSCREEN_PASSWORD)) {
                 Utilities.showErrorMessage(getString(R.string.default_passcode_warning), this);
             }
             lockscreenPasswordTextBox.setText(lockscreenPassword);
 
-            // Загружаем ключ шифрования, используя пароль из ОЗУ
-            String currentKey = SettingsManager.getInstance(this).getDecryptedEncryptionKey(
-                lockscreenPassword, this);
+            // Загружаем ключ шифрования
+            currentKey = SettingsManager.getInstance(this).getDecryptedEncryptionKey(lockscreenPassword, this);
             encryptionKeyTextBox.setText(currentKey);
 
             // Загружаем таймаут блокировки
@@ -87,6 +97,7 @@ public class SettingsActivity extends AppCompatActivity {
             Utilities.showErrorMessage(e.getMessage(), this);
         } finally {
             lockscreenPassword = "";
+            currentKey = "";
         }
     }
 }
