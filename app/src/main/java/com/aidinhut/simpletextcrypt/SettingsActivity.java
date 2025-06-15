@@ -11,60 +11,41 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        loadPreviousSettings();
-    }
 
-    public void onSaveClicked(View view) {
-        EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
-        EditText lockscreenPasswordTextBox = findViewById(R.id.passcodeEditText);
-        EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEditText);
-
-        String encryptionKey = encryptionKeyTextBox.getText().toString();
-        String lockscreenPassword = lockscreenPasswordTextBox.getText().toString();
-
-        if (encryptionKey.length() < 8) {
-            Utilities.showErrorMessage(getString(R.string.invalid_key_length_error), this);
-            return;
-        }
-        if (lockscreenPassword.length() < 8) {
-            Utilities.showErrorMessage(getString(R.string.invalid_lockscreen_password_error), this);
-            return;
-        }
-
-        try {
-            SettingsManager.getInstance(this).setLockscreenPassword(lockscreenPassword, this);
-            SettingsManager.getInstance(this).setEncryptionKey(encryptionKey, lockscreenPassword, this);
-            SettingsManager.getInstance(this).setLockTimeout(lockTimeoutTextBox.getText().toString(), this);
-        } catch (Exception error) {
-            Utilities.showErrorMessage(error.getMessage(), this);
-            return;
-        }
-
-        finish();
+        // Инициализация полей ввода
+        EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEdit);
+        lockTimeoutTextBox.setText(String.valueOf(SettingsManager.getInstance(this).getLockTimeout(this)));
     }
 
     public void onKeyCleanClicked(View view) {
         EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
         encryptionKeyTextBox.setText("");
+        EditText passcodeTextBox = findViewById(R.id.passcodeEditText);
+        passcodeTextBox.setText("");
     }
 
-    @Override
-    protected void onPause() {
-        finish();
-        super.onPause();
-    }
-
-    private void loadPreviousSettings() {
-        EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
-        EditText lockscreenPasswordTextBox = findViewById(R.id.passcodeEditText);
-        EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEditText);
-
+    public void onSaveClicked(View view) {
         try {
-            lockscreenPasswordTextBox.setText(""); // Пароль не отображаем
-            encryptionKeyTextBox.setText(""); // Ключ не отображаем
-            lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance(this).getLockTimeout(this)));
-        } catch (Exception error) {
-            Utilities.showErrorMessage(error.getMessage(), this);
+            EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
+            String encryptionKey = encryptionKeyTextBox.getText().toString();
+            EditText passcodeTextBox = findViewById(R.id.passcodeEditText);
+            String lockscreenPassword = passcodeTextBox.getText().toString();
+            EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEdit);
+            String lockTimeout = lockTimeoutTextBox.getText().toString();
+
+            SettingsManager settingsManager = SettingsManager.getInstance(this);
+            if (!lockscreenPassword.isEmpty()) {
+                settingsManager.setLockscreenPassword(lockscreenPassword, this);
+            }
+            if (!encryptionKey.isEmpty()) {
+                settingsManager.setEncryptionKey(encryptionKey, lockscreenPassword, this);
+            }
+            settingsManager.setLockTimeout(lockTimeout, this);
+
+            Utilities.showMessage(getString(R.string.settings_saved), this);
+            finish();
+        } catch (Exception e) {
+            Utilities.showErrorMessage(e.getMessage(), this);
         }
     }
 }
