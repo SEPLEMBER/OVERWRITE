@@ -79,7 +79,7 @@ public class Crypter {
     }
 
     private SecretKey deriveKey(char[] password, String salt) throws Exception {
-        PBEKeySpec spec = new PBEKeySpec(password, salt.getBytes(StandardCharsets.UTF_8), 50000, 256);
+        PBEKeySpec spec = new PBEKeySpec(password, salt.getBytes(StandardCharsets.UTF_8), 35000, 256);
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
 
