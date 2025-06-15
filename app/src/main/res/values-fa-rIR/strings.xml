@@ -5,6 +5,7 @@
     <string name="action_about">درباره</string>
     <string name="title_activity_lock">قفل</string>
     <string name="title_activity_settings">تنظیمات</string>
+    <string name="invalid_key_error">طول کلید باید حداقل 3 کاراکتر باشد.</string>
     <string name="invalid_key_length_error">کلید رمزنگاری باید حداقل 8 کاراکتر باشد</string>
     <string name="invalid_lockscreen_password_error">رمز عبور صفحه قفل باید حداقل 8 کاراکتر باشد.</string>
     <string name="error_title">خطا</string>
@@ -14,6 +15,12 @@
     <string name="wrong_lockscreen_password_error">رمز عبور صفحه قفل وارد شده اشتباه است.</string>
     <string name="encryption_key_label">کلید رمزنگاری (از یک کلید پیچیده استفاده کنید، مثلاً "jn@32+iQm9")</string>
     <string name="lockscreen_password_label">رمز عبور صفحه قفل</string>
+    <string name="about_title">درباره SimpleTextCrypt</string>
+    <string name="about_copyright">کپی‌رایت © ۲۰۱۵–۲۰۲۰ آیدین قریب‌نواز</string>
+    <string name="about_source">کد منبع برنامه را می‌توانید اینجا پیدا کنید: https://github.com/aidin36/simpletextcrypt</string>
+    <string name="about_license_1">SimpleTextCrypt یک نرم‌افزار آزاد است: شما می‌توانید آن را بازتوزیع کنید یا تغییر دهید تحت شرایط مجوز عمومی گنو که توسط بنیاد نرم‌افزار آزاد منتشر شده است، یا نسخه ۳ مجوز، یا (به انتخاب شما) نسخه‌های بعدی.</string>
+    <string name="about_license_2">SimpleTextCrypt با این امید توزیع می‌شود که مفید باشد، اما بدون هیچ‌گونه ضمانتی؛ حتی بدون ضمانت ضمنی برای قابلیت فروش یا تناسب برای هدف خاص. برای جزئیات بیشتر به مجوز عمومی گنو مراجعه کنید.</string>
+    <string name="about_license_3">یک نسخه از مجوز عمومی گنو همراه با کد منبع SimpleTextCrypt توزیع شده است. همچنین می‌توانید یک نسخه را اینجا پیدا کنید: <a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
     <string name="default_passcode">رمز عبور پیش‌فرض صفحه قفل: 12345678</string>
     <string name="encrypt_button_text">رمزنگاری</string>
     <string name="decrypt_button_text">رمزگشایی</string>
