@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +20,6 @@ import androidx.core.text.util.LinkifyCompat;
 import androidx.lifecycle.Lifecycle;
 import android.text.util.Linkify;
 
-import com.aidinhut.simpletextcrypt.BuildConfig;
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 
 public class MainActivity extends AppCompatActivity {
@@ -196,9 +194,6 @@ public class MainActivity extends AppCompatActivity {
                 String key = getEncryptionKey();
                 long start = System.currentTimeMillis();
                 String result = isEncrypt ? Crypter.getInstance().encrypt(key.toCharArray(), input) : Crypter.getInstance().decrypt(key.toCharArray(), input);
-                if (BuildConfig.DEBUG) {
-                    Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
-                }
                 return result;
             } catch (Exception e) {
                 error = e;
