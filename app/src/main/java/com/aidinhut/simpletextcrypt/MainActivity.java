@@ -18,6 +18,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.util.LinkifyCompat;
+import androidx.lifecycle.Lifecycle;
+import android.text.util.Linkify;
 
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 
@@ -183,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         private Exception error;
 
         CryptoTask(boolean isEncrypt) {
-            this.isEncrypt = this.isEncrypt;
+            this.isEncrypt = isEncrypt;
         }
 
         @Override
