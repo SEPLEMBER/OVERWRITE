@@ -2,6 +2,15 @@ package com.aidinhut.simpletextcrypt;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Base64;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 
 public class SettingsManager {
     private static SettingsManager instance;
@@ -18,18 +27,73 @@ public class SettingsManager {
         return instance;
     }
 
-    public String getPasscode(Context context) {
-        String passcode = preferences.getString(Constants.PASSCODE_SETTINGS_KEY, null);
-        if (passcode == null) {
-            return Constants.DEFAULT_PASSCODE;
+    public void setLockscreenPassword(String password, Context context) throws Exception {
+        if (password == null || password.length() < 8) {
+            throw new IllegalArgumentException(context.getString(R.string.invalid_lockscreen_password_error));
         }
-        return passcode;
+        byte[] salt = generateSalt();
+        String saltBase64 = Base64.encodeToString(salt, Base64.NO_WRAP);
+        String hash = computeHash(password, salt);
+        preferences.edit()
+            .putString("lockscreen_salt", saltBase64)
+            .putString("lockscreen_hash", hash)
+            .apply();
     }
 
-    public void setPasscode(String passcode, Context context) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(Constants.PASSCODE_SETTINGS_KEY, passcode);
-        editor.apply();
+    public boolean verifyLockscreenPassword(String password) throws Exception {
+        String storedSaltBase64 = preferences.getString("lockscreen_salt", null);
+        String storedHash = preferences.getString("lockscreen_hash", null);
+        if (storedSaltBase64 == null || storedHash == null) {
+            return password.equals("12345678"); // Default password
+        }
+        byte[] salt = Base64.decode(storedSaltBase64, Base64.DEFAULT);
+        String computedHash = computeHash(password, salt);
+        return computedHash.equals(storedHash);
+    }
+
+    public void setEncryptionKey(String encryptionKey, String lockscreenPassword, Context context) throws Exception {
+        if (encryptionKey == null || encryptionKey.length() < 8) {
+            throw new IllegalArgumentException(context.getString(R.string.invalid_encryption_key_error));
+        }
+        if (!verifyLockscreenPassword(lockscreenPassword)) {
+            throw new SecurityException(context.getString(R.string.wrong_lockscreen_password_error));
+        }
+        byte[] encryptionSalt = generateSalt();
+        String encryptionSaltBase64 = Base64.encodeToString(encryptionSalt, Base64.NO_WRAP);
+        byte[] iv = generateNonce();
+        String ivBase64 = Base64.encodeToString(iv, Base64.NO_WRAP);
+        SecretKey secretKey = deriveKey(lockscreenPassword, encryptionSalt);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
+        byte[] encrypted = cipher.doFinal(encryptionKey.getBytes(StandardCharsets.UTF_8));
+        String encryptedBase64 = Base64.encodeToString(encrypted, Base64.NO_WRAP);
+        preferences.edit()
+            .putString("encryption_salt", encryptionSaltBase64)
+            .putString("encryption_iv", ivBase64)
+            .putString("encrypted_encryption_key", encryptedBase64)
+            .apply();
+    }
+
+    public String getDecryptedEncryptionKey(String lockscreenPassword, Context context) throws Exception {
+        if (!verifyLockscreenPassword(lockscreenPassword)) {
+            throw new SecurityException(context.getString(R.string.wrong_lockscreen_password_error));
+        }
+        String encryptionSaltBase64 = preferences.getString("encryption_salt", null);
+        String ivBase64 = preferences.getString("encryption_iv", null);
+        String encryptedBase64 = preferences.getString("encrypted_encryption_key", null);
+        if (encryptionSaltBase64 == null || ivBase64 == null || encryptedBase64 == null) {
+            throw new Exception(context.getString(R.string.no_encryption_key_set_error));
+        }
+        byte[] encryptionSalt = Base64.decode(encryptionSaltBase64, Base64.DEFAULT);
+        byte[] iv = Base64.decode(ivBase64, Base64.DEFAULT);
+        byte[] encrypted = Base64.decode(encryptedBase64, Base64.DEFAULT);
+        SecretKey secretKey = deriveKey(lockscreenPassword, encryptionSalt);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+        byte[] decrypted = cipher.doFinal(encrypted);
+        return new String(decrypted, StandardCharsets.UTF_8);
     }
 
     public int getLockTimeout(Context context) {
@@ -39,21 +103,35 @@ public class SettingsManager {
     public void setLockTimeout(String timeout, Context context) {
         try {
             int timeoutInt = Integer.parseInt(timeout);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt(Constants.LOCK_TIMEOUT_SETTINGS_KEY, timeoutInt);
-            editor.apply();
+            preferences.edit().putInt(Constants.LOCK_TIMEOUT_SETTINGS_KEY, timeoutInt).apply();
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid lock timeout value");
         }
     }
 
-    public String getEncryptionKey(Context context) {
-        return preferences.getString(Constants.ENCRYPTION_KEY_SETTINGS_KEY, "");
+    private byte[] generateSalt() {
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        return salt;
     }
 
-    public void setEncryptionKey(String key, Context context) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(Constants.ENCRYPTION_KEY_SETTINGS_KEY, key);
-        editor.apply();
+    private byte[] generateNonce() {
+        byte[] nonce = new byte[12];
+        new SecureRandom().nextBytes(nonce);
+        return nonce;
+    }
+
+    private String computeHash(String password, byte[] salt) throws Exception {
+        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 1000, 256);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        byte[] hash = skf.generateSecret(spec).getEncoded();
+        return Base64.encodeToString(hash, Base64.NO_WRAP);
+    }
+
+    private SecretKey deriveKey(String password, byte[] salt) throws Exception {
+        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 35000, 256);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        byte[] key = skf.generateSecret(spec).getEncoded();
+        return new SecretKeySpec(key, "AES");
     }
 }
