@@ -16,18 +16,18 @@
     <string name="encryption_key_label">کلید رمزنگاری (از یک کلید پیچیده استفاده کنید، مثلاً "jn@32+iQm9")</string>
     <string name="lockscreen_password_label">رمز عبور صفحه قفل</string>
     <string name="about_title">درباره SimpleTextCrypt</string>
-    <string name="about_copyright">کپی‌رایت © ۲۰۱۵–۲۰۲۰ آیدین قریب‌نواز</string>
-    <string name="about_source">کد منبع برنامه را می‌توانید اینجا پیدا کنید: https://github.com/aidin36/simpletextcrypt</string>
-    <string name="about_license_1">SimpleTextCrypt یک نرم‌افزار آزاد است: شما می‌توانید آن را بازتوزیع کنید یا تغییر دهید تحت شرایط مجوز عمومی گنو که توسط بنیاد نرم‌افزار آزاد منتشر شده است، یا نسخه ۳ مجوز، یا (به انتخاب شما) نسخه‌های بعدی.</string>
-    <string name="about_license_2">SimpleTextCrypt با این امید توزیع می‌شود که مفید باشد، اما بدون هیچ‌گونه ضمانتی؛ حتی بدون ضمانت ضمنی برای قابلیت فروش یا تناسب برای هدف خاص. برای جزئیات بیشتر به مجوز عمومی گنو مراجعه کنید.</string>
-    <string name="about_license_3">یک نسخه از مجوز عمومی گنو همراه با کد منبع SimpleTextCrypt توزیع شده است. همچنین می‌توانید یک نسخه را اینجا پیدا کنید: <a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
-    <string name="default_passcode">رمز عبور پیش‌فرض صفحه قفل: 12345678</string>
+    <string name="about_copyright">کپی‌رایت © ۲۰۱۵–۲۰۲۳ آیدین قاریبی</string>
+    <string name="about_source">کود سوسسه وبسایت برنامه را می‌توانید پیدا کنید: https://github.com/aidinhut/simpletextcrypt</string>
+    <string name="about_license_1SimpleTextCrypt یک نرم‌افزار آزاد است: شما می‌توانید آن را بازتسیتدید کنید یا تغییر دهید تحت شرایط مجوز عمومی گنو که توسط بنیاد نرم‌افزار آزاد منتشر شده است، یا نسخه ۳ یا (به انتخاب شما) نسخه‌های بعدی.</string>
+    <string name="about_license_2">SimpleTextCrypt با این امید توزیع می‌شود که مفید باشد، اما بدون هیچ گونه ضمانت؛ حتی بدون ضمانت ضمنی برای قابلیت فروش یا تناسب برای هدف خاص. برای جزئیات بیشتر به مجوز عمومی گنو مراجعه کنید.</string>
+    <string name="about_license_3">یک نسخه از مجوز عمومی گنو همراه با کود منبع SimpleTextCrypt توزیع شده است.. همچنین می‌توانید یک نسخه را اینجا پیدا کنید: <a href="https://www.gnu.org/licenses/gpl-3.0.html">https://www.gnu.org</a></string>
+    <string name="default_passcode">رمز عبور پیش‌فرض صفحه قفل: 12345678. کلید رمزنگاری پیش‌فرض: 1111111111</string>
     <string name="encrypt_button_text">رمزنگاری</string>
     <string name="decrypt_button_text">رمزگشایی</string>
     <string name="copy_button_text">کپی</string>
     <string name="paste_button_text">چسباندن</string>
     <string name="lock_timeout_label">مدت زمان باز ماندن برنامه (به دقیقه)</string>
-    <string name="lock_timeout_help">برنامه پس از چند دقیقه عدم فعالیت قفل می‌شود. برای قفل فوری صفر را تنظیم کنید.</string>
+    <string name="lock_timeout_help">برنامه پس از چند دقیقه عدم فعالیت قفل می‌شود. برای قفل فوری صفر کنید.</string>
     <string name="clear_button">پاک کردن</string>
     <string name="save_button">ذخیره</string>
     <string name="exit_button">خروج</string>
