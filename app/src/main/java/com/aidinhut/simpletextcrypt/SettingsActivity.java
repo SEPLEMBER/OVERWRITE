@@ -1,20 +1,3 @@
-/*
- * This file is part of SimpleTextCrypt.
- * Copyright (c) 2015-2020, Aidin Gharibnavaz <aidin@aidinhut.com>
- *
- * SimpleTextCrypt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SimpleTextCrypt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with SimpleTextCrypt.  If not, see <http://www.gnu.org/licenses/>.
- */
 package com.aidinhut.simpletextcrypt;
 
 import android.app.AlertDialog;
@@ -26,7 +9,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
-
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -54,9 +36,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Saving settings.
         try {
-            SettingsManager.getInstance().setPasscode(passcodeTextBox.getText().toString(), this);
-            SettingsManager.getInstance().setEncryptionKey(encryptionKeyTextBox.getText().toString(), this);
-            SettingsManager.getInstance().setLockTimeout(lockTimeoutTextBox.getText().toString(), this);
+            SettingsManager.getInstance(this).setPasscode(passcodeTextBox.getText().toString(), this);
+            SettingsManager.getInstance(this).setEncryptionKey(encryptionKeyTextBox.getText().toString(), this);
+            SettingsManager.getInstance(this).setLockTimeout(lockTimeoutTextBox.getText().toString(), this);
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
             return;
@@ -86,9 +68,9 @@ public class SettingsActivity extends AppCompatActivity {
         EditText lockTimeoutTextBox = (EditText)findViewById(R.id.lockTimeoutEditText);
 
         try {
-            encryptionKeyTextBox.setText(SettingsManager.getInstance().getEncryptionKey(this));
-            passcodeTextBox.setText(SettingsManager.getInstance().getPasscode(this));
-            lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance().getLockTimeout(this)));
+            encryptionKeyTextBox.setText(SettingsManager.getInstance(this).getEncryptionKey(this));
+            passcodeTextBox.setText(SettingsManager.getInstance(this).getPasscode(this));
+            lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance(this).getLockTimeout(this)));
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
         }
