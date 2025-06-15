@@ -195,9 +195,10 @@ public class MainActivity extends AppCompatActivity {
                 String key = getEncryptionKey();
                 long start = System.currentTimeMillis();
                 String result = isEncrypt ? Crypter.getInstance().encrypt(key.toCharArray(), input) : Crypter.getInstance().decrypt(key.toCharArray(), input);
-                if (BuildConfig.DEBUG) {
-                    Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
-                }
+                // Временно отключено логирование из-за ошибки с BuildConfig
+                // if (BuildConfig.DEBUG) {
+                //     Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
+                // }
                 return result;
             } catch (Exception e) {
                 error = e;
