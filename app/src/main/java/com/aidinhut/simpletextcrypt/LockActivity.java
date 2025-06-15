@@ -55,17 +55,14 @@ public class LockActivity extends AppCompatActivity {
         try {
             if (!SettingsManager.getInstance(this).verifyLockscreenPassword(enteredPassword)) {
                 Utilities.showErrorMessage(getString(R.string.wrong_lockscreen_password_error), this);
-                enteredPassword = "";
                 return;
             }
             String decryptedEncryptionKey = SettingsManager.getInstance(this).getDecryptedEncryptionKey(enteredPassword, this);
             targetIntent.putExtra("encryption_key", decryptedEncryptionKey);
             targetIntent.putExtra("lockscreen_password", enteredPassword);
             startActivity(targetIntent);
-            enteredPassword = "";
             finish();
         } catch (Exception e) {
-            enteredPassword = "";
             Utilities.showErrorMessage(e.getMessage(), this);
         }
     }
