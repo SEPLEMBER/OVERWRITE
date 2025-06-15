@@ -14,7 +14,7 @@ public class Crypter {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int TAG_LENGTH_BIT = 128;
     private static final int IV_LENGTH_BYTE = 12;
-    private static final int NONCE_BASE64_LENGTH = 16; // Base64-кодированный 12-байтный nonce
+    private static final int NONCE_BASE64_LENGTH = 16;
     private static final Cipher cipher;
     private static final SecretKeyFactory factory;
 
@@ -38,12 +38,12 @@ public class Crypter {
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, nonce));
         byte[] encrypted = cipher.doFinal(input.getBytes(StandardCharsets.UTF_8));
 
-        return nonceBase64 + Base64.encodeToString(encrypted, Base64.DEFAULT);
+        return nonceBase64 + Base64.encodeToString(encrypted, Base64.NO_WRAP);
     }
 
     public static String decrypt(char[] password, String input) throws Exception {
-        if (input == null || input.length() < NONCE_BASE64_LENGTH) {
-            throw new IllegalArgumentException("Invalid input format");
+        if (input == null || input.length() < NONCE_BASE64_LENGTH + 4) {
+            throw new IllegalArgumentException("Invalid input format: too short");
         }
 
         String nonceBase64 = input.substring(0, NONCE_BASE64_LENGTH);
@@ -61,11 +61,18 @@ public class Crypter {
         if (nonce.length != IV_LENGTH_BYTE) {
             throw new IllegalArgumentException("Invalid nonce length");
         }
+        if (encrypted.length < 16) {
+            throw new IllegalArgumentException("Encrypted data too short for tag");
+        }
 
         SecretKey secretKey = deriveKey(password, nonceBase64);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, nonce));
-        byte[] decrypted = cipher.doFinal(encrypted);
-        return new String(decrypted, StandardCharsets.UTF_8);
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, nonce));
+            byte[] decrypted = cipher.doFinal(encrypted);
+            return new String(decrypted, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Decryption failed: invalid key or data");
+        }
     }
 
     private static byte[] getRandomNonce() {
