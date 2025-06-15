@@ -23,7 +23,7 @@ public class SettingsActivity extends AppCompatActivity {
         String lockscreenPassword = lockscreenPasswordTextBox.getText().toString();
 
         if (encryptionKey.length() < 8) {
-            Utilities.showErrorMessage(getString(R.string.invalid_encryption_key_error), this);
+            Utilities.showErrorMessage(getString(R.string.invalid_key_length_error), this);
             return;
         }
         if (lockscreenPassword.length() < 8) {
@@ -60,11 +60,8 @@ public class SettingsActivity extends AppCompatActivity {
         EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEditText);
 
         try {
-            String lockscreenPassword = SettingsManager.getInstance(this).getPassword(this);
-            lockscreenPasswordTextBox.setText(lockscreenPassword);
-            if (!lockscreenPassword.equals("12345678")) {
-                encryptionKeyTextBox.setText(SettingsManager.getInstance(this).getDecryptedEncryptionKey(lockscreenPassword, this));
-            }
+            lockscreenPasswordTextBox.setText(""); // Пароль не отображаем
+            encryptionKeyTextBox.setText(""); // Ключ не отображаем
             lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance(this).getLockTimeout(this)));
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
