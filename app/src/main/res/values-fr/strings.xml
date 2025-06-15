@@ -15,6 +15,7 @@
     <string name="wrong_lockscreen_password_error">Le mot de passe de l\'écran de verrouillage saisi est incorrect.</string>
     <string name="encryption_key_label">Clé de chiffrement (Utilisez une clé complexe, par ex., "jn@32+iJm9")</string>
     <string name="lockscreen_password_label">Mot de passe de l\'écran de verrouillage</string>
+    <string name="passcode_hint">Entrez le mot de passe de l\'écran de verrouillage</string>
     <string name="about_title">À propos de SimpleTextCrypt</string>
     <string name="about_copyright">Copyright © 2015–2020 Aidin Gharibnavaz</string>
     <string name="about_source">Le code source de l\'application peut être trouvé ici : https://github.com/aidin36/simpletextcrypt</string>
@@ -31,4 +32,5 @@
     <string name="clear_button">Effacer</string>
     <string name="save_button">Sauvegarder</string>
     <string name="exit_button">Quitter</string>
+    <string name="lockscreen_password_set_hint">Un mot de passe personnalisé pour l\'écran de verrouillage est défini. Entrez un nouveau mot de passe pour le modifier.</string>
 </resources>
