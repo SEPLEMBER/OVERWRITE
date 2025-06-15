@@ -49,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            Intent intent = new Intent(this, SettingsActivity.class);
+            intent.putExtra("lockscreen_password", getIntent().getStringExtra("lockscreen_password"));
+            startActivity(intent);
             return true;
         }
         if (id == R.id.action_about) {
@@ -184,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
         private Exception error;
 
         CryptoTask(boolean isEncrypt) {
-            this.isEncrypt = isEncrypt;
+            this.isEncrypt = this.isEncrypt;
         }
 
         @Override
