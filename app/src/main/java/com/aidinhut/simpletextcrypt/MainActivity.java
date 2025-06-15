@@ -18,7 +18,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.util.LinkifyCompat;
+import androidx.lifecycle.Lifecycle;
+import android.text.util.Linkify;
 
+import com.aidinhut.simpletextcrypt.BuildConfig;
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
 
 public class MainActivity extends AppCompatActivity {
@@ -175,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isInForeground() {
-        return getLifecyclelott().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+        return getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
     }
 
     private class CryptoTask extends AsyncTask<String, Void, String> {
