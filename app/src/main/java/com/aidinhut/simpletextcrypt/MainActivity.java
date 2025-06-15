@@ -35,7 +35,9 @@ public class MainActivity extends AppCompatActivity {
         lastActivity = System.currentTimeMillis() / 1000;
         encryptionKey = getIntent().getStringExtra("encryption_key");
         if (encryptionKey == null) {
-            startActivity(new Intent(this, LockActivity.class));
+            Intent lockIntent = new Intent(this, LockActivity.class);
+            lockIntent.putExtra("target_intent", new Intent(this, MainActivity.class));
+            startActivity(lockIntent);
             finish();
         }
     }
@@ -50,7 +52,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            Intent lockIntent = new Intent(this, LockActivity.class);
+            lockIntent.putExtra("target_intent", settingsIntent);
+            startActivity(lockIntent);
             return true;
         }
         if (id == R.id.action_about) {
@@ -110,30 +115,34 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        super.onResume();
         int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout != 0 && currentTime - lastActivity >= timeout * 60) {
             setText("");
             encryptionKey = null;
-            startActivity(new Intent(this, LockActivity.class));
+            Intent lockIntent = new Intent(this, LockActivity.class);
+            lockIntent.putExtra("target_intent", new Intent(this, MainActivity.class));
+            startActivity(lockIntent);
             finish();
         } else {
             lastActivity = System.currentTimeMillis() / 1000;
         }
-        super.onResume();
     }
 
     @Override
     protected void onPause() {
+        super.onPause();
         int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
         long currentTime = System.currentTimeMillis() / 1000;
         if (timeout == 0 || currentTime - lastActivity >= timeout * 60) {
             setText("");
             encryptionKey = null;
-            startActivity(new Intent(this, LockActivity.class));
+            Intent lockIntent = new Intent(this, LockActivity.class);
+            lockIntent.putExtra("target_intent", new Intent(this, MainActivity.class));
+            startActivity(lockIntent);
             finish();
         }
-        super.onPause();
     }
 
     private String getText() {
