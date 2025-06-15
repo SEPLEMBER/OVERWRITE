@@ -11,10 +11,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class LockActivity extends AppCompatActivity {
 
+    private Intent targetIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock);
+
+        // Сохраняем целевой интент
+        targetIntent = getIntent().getParcelableExtra("target_intent");
+        if (targetIntent == null) {
+            targetIntent = new Intent(this, MainActivity.class);
+        }
 
         ((EditText)findViewById(R.id.passcodeEditText)).setOnEditorActionListener(
                 new TextView.OnEditorActionListener() {
@@ -45,9 +53,9 @@ public class LockActivity extends AppCompatActivity {
                 return;
             }
             String decryptedEncryptionKey = SettingsManager.getInstance(this).getDecryptedEncryptionKey(enteredPassword, this);
-            Intent newIntent = new Intent(this, MainActivity.class);
-            newIntent.putExtra("encryption_key", decryptedEncryptionKey);
-            startActivity(newIntent);
+            targetIntent.putExtra("encryption_key", decryptedEncryptionKey);
+            targetIntent.putExtra("lockscreen_password", enteredPassword);
+            startActivity(targetIntent);
             finish();
         } catch (Exception e) {
             Utilities.showErrorMessage(e.getMessage(), this);
