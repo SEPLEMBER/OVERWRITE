@@ -25,8 +25,8 @@ public class SettingsActivity extends AppCompatActivity {
         EditText passcodeTextBox = (EditText)findViewById(R.id.passcodeEditText);
         EditText lockTimeoutTextBox = (EditText)findViewById(R.id.lockTimeoutEditText);
 
-        if (encryptionKeyTextBox.getText().toString().length() < 3) {
-            Utilities.showErrorMessage(getString(R.string.invalid_key_error), this);
+        if (encryptionKeyTextBox.getText().toString().length() < 8) {
+            Utilities.showErrorMessage(getString(R.string.invalid_key_length_error), this);
             return;
         }
         if (passcodeTextBox.getText().toString().length() < 2) {
@@ -34,7 +34,6 @@ public class SettingsActivity extends AppCompatActivity {
             return;
         }
 
-        // Saving settings.
         try {
             SettingsManager.getInstance(this).setPasscode(passcodeTextBox.getText().toString(), this);
             SettingsManager.getInstance(this).setEncryptionKey(encryptionKeyTextBox.getText().toString(), this);
@@ -44,7 +43,6 @@ public class SettingsActivity extends AppCompatActivity {
             return;
         }
 
-        // Everything goes OK.
         finish();
     }
 
@@ -55,10 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        // This activity won't lock. So, if the user send the app to the background while on
-        // the settings activity, anyone can get back to it without the need to enter passcode.
         finish();
-
         super.onPause();
     }
 
