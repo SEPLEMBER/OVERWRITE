@@ -2,13 +2,12 @@ package com.aidinhut.simpletextcrypt;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.lastActivity = System.currentTimeMillis() / 1000;
+        lastActivity = System.currentTimeMillis() / 1000;
     }
 
     @Override
@@ -41,31 +40,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivity(settingsIntent);
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
-
         if (id == R.id.action_about) {
             showAbout();
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     public void onEncryptButtonClicked(View view) {
-        new CryptoTask(true).execute(getText(), getEncryptionKey());
+        new CryptoTask(true).execute(getText());
     }
 
     public void onDecryptButtonClicked(View view) {
-        new CryptoTask(false).execute(getText(), getEncryptionKey());
+        new CryptoTask(false).execute(getText());
     }
 
     public void onCopyButtonClicked(View view) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Encrypted Text", getText());
+        ClipData clip = ClipData.newPlainText("Locked Text", getText());
         clipboard.setPrimaryClip(clip);
     }
 
@@ -86,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     public void onExitButtonClicked(View view) {
         Crypter.getInstance().clearCache();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        for (int i = 1; i <= 30; i++) {
+        for (int i = 1; i <= 50; i++) {
             ClipData clip = ClipData.newPlainText("Clear", String.valueOf(i));
             clipboard.setPrimaryClip(clip);
         }
@@ -101,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             setText("");
             finish();
         } else {
-            this.lastActivity = System.currentTimeMillis() / 1000;
+            lastActivity = System.currentTimeMillis() / 1000;
         }
         super.onResume();
     }
@@ -127,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         textBox.setText(input);
     }
 
-    private String getEncryptionKey() {
+    private String getEncryptionKey() throws EncryptionKeyNotSet {
         String encKey = SettingsManager.getInstance(this).getEncryptionKey(this);
         if (encKey.isEmpty()) {
             throw new EncryptionKeyNotSet(this);
@@ -155,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
         dialogBuilder.setView(scrollView);
         dialogBuilder.setPositiveButton("OK", null);
         dialogBuilder.setCancelable(true);
-
         dialogBuilder.show();
     }
 
@@ -171,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
             try {
                 String input = params[0];
-                String key = params[1];
+                String key = getEncryptionKey();
                 long start = System.currentTimeMillis();
                 String result = isEncrypt ? Crypter.getInstance().encrypt(key.toCharArray(), input) : Crypter.getInstance().decrypt(key.toCharArray(), input);
                 Log.d("Crypto", (isEncrypt ? "Encryption" : "Decryption") + " time: " + (System.currentTimeMillis() - start) + " ms");
