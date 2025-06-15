@@ -35,12 +35,10 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getInstance(this).setLockscreenPassword(lockscreenPassword, this);
             SettingsManager.getInstance(this).setEncryptionKey(encryptionKey, lockscreenPassword, this);
             SettingsManager.getInstance(this).setLockTimeout(lockTimeoutTextBox.getText().toString(), this);
-        } catch (Exception error) {
-            Utilities.showErrorMessage(error.getMessage(), this);
-            return;
+            finish();
+        } catch (Exception e) {
+            Utilities.showErrorMessage(e.getMessage(), this);
         }
-
-        finish();
     }
 
     public void onKeyCleanClicked(View view) {
@@ -60,11 +58,25 @@ public class SettingsActivity extends AppCompatActivity {
         EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEdit);
 
         try {
-            lockscreenPasswordTextBox.setText(""); // Пароль не отображаем
-            encryptionKeyTextBox.setText(""); // Ключ не отображаем
-            lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance(this).getLockTimeout(this)));
-        } catch (Exception error) {
-            Utilities.showErrorMessage(error.getMessage(), this);
+            // Получаем пароль экрана блокировки из Intent
+            String lockscreenPassword = getIntent().getStringExtra("lockscreen_password");
+            if (lockscreenPassword == null) {
+                // Если пароль не передан, используем дефолтный (для первой установки)
+                lockscreenPassword = Constants.DEFAULT_LOCKSCREEN_PASSWORD;
+                lockscreenPasswordTextBox.setHint(R.string.lockscreen_password_set_hint);
+            }
+            lockscreenPasswordTextBox.setText(lockscreenPassword);
+
+            // Загружаем ключ шифрования, используя пароль из ОЗУ
+            String currentKey = SettingsManager.getInstance(this).getDecryptedEncryptionKey(
+                lockscreenPassword, this);
+            encryptionKeyTextBox.setText(currentKey);
+
+            // Загружаем таймаут блокировки
+            int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
+            lockTimeoutTextBox.setText(Integer.toString(timeout));
+        } catch (Exception e) {
+            Utilities.showErrorMessage(e.getMessage(), this);
         }
     }
 }
