@@ -5,6 +5,7 @@
     <string name="action_about">À propos</string>
     <string name="title_activity_lock">Verrouillage</string>
     <string name="title_activity_settings">Paramètres</string>
+    <string name="invalid_key_error">La longueur de la clé doit être d\'au moins 3 caractères.</string>
     <string name="invalid_key_length_error">La clé de chiffrement doit comporter au moins 8 caractères</string>
     <string name="invalid_lockscreen_password_error">Le mot de passe de l\'écran de verrouillage doit comporter au moins 8 caractères.</string>
     <string name="error_title">Erreur</string>
@@ -14,6 +15,12 @@
     <string name="wrong_lockscreen_password_error">Le mot de passe de l\'écran de verrouillage saisi est incorrect.</string>
     <string name="encryption_key_label">Clé de chiffrement (Utilisez une clé complexe, par ex., "jn@32+iQm9")</string>
     <string name="lockscreen_password_label">Mot de passe de l\'écran de verrouillage</string>
+    <string name="about_title">À propos de SimpleTextCrypt</string>
+    <string name="about_copyright">Copyright © 2015–2020 Aidin Gharibnavaz</string>
+    <string name="about_source">Le code source de l\'application peut être trouvé ici : https://github.com/aidin36/simpletextcrypt</string>
+    <string name="about_license_1">SimpleTextCrypt est un logiciel libre : vous pouvez le redistribuer et/ou le modifier sous les termes de la Licence Publique Générale GNU telle que publiée par la Free Software Foundation, soit la version 3 de la licence, soit (à votre choix) toute version ultérieure.</string>
+    <string name="about_license_2">SimpleTextCrypt est distribué dans l\'espoir qu\'il sera utile, mais SANS AUCUNE GARANTIE ; sans même la garantie implicite de COMMERCIALISATION ou d\'ADÉQUATION À UN USAGE PARTICULIER. Voir la Licence Publique Générale GNU pour plus de détails.</string>
+    <string name="about_license_3">Une copie de la Licence Publique Générale GNU est distribuée avec le code source de SimpleTextCrypt. Vous pouvez également en trouver une copie ici : <a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
     <string name="default_passcode">Le mot de passe par défaut de l\'écran de verrouillage est : 12345678</string>
     <string name="encrypt_button_text">Chiffrer</string>
     <string name="decrypt_button_text">Déchiffrer</string>
