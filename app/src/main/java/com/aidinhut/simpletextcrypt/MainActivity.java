@@ -2,12 +2,13 @@ package com.aidinhut.simpletextcrypt;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onCopyButtonClicked(View view) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Locked Text", getText());
+        ClipData clip = ClipData.newPlainText("Encrypted Text", getText());
         clipboard.setPrimaryClip(clip);
     }
 
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     public void onExitButtonClicked(View view) {
         Crypter.getInstance().clearCache();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        for (int i = 1; i <= 50; i++) {
+        for (int i = 1; i <= 30; i++) {
             ClipData clip = ClipData.newPlainText("Clear", String.valueOf(i));
             clipboard.setPrimaryClip(clip);
         }
