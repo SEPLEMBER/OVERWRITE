@@ -23,6 +23,7 @@
     <string name="about_license_2">SimpleTextCrypt is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</string>
     <string name="about_license_3">A copy of the GNU General Public License is distributed with SimpleTextCrypt source code. You can also find a copy at: <a href="https://www.gnu.org/licenses/gpl-3.0.html">https://www.gnu.org</a></string>
     <string name="default_passcode">Default lockscreen password is: 12345678. Default encryption key is: 1111111111</string>
+    <string name="default_passcode_warning">You are using the default lockscreen password. Please change it for security.</string>
     <string name="encrypt_button_text">Encrypt</string>
     <string name="decrypt_button_text">Decrypt</string>
     <string name="copy_button_text">Copy</string>
