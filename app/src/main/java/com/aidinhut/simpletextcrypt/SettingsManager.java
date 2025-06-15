@@ -18,7 +18,6 @@ public class SettingsManager {
 
     private SettingsManager(Context context) {
         preferences = context.getSharedPreferences(Constants.PREFERENCES_KEY, Context.MODE_PRIVATE);
-        // Инициализация ключа шифрования по умолчанию, если он не установлен
         initializeDefaultEncryptionKey(context);
     }
 
@@ -53,6 +52,10 @@ public class SettingsManager {
         return computedHash.equals(storedHash);
     }
 
+    public boolean hasCustomLockscreenPassword() {
+        return preferences.contains("lockscreen_salt") && preferences.contains("lockscreen_hash");
+    }
+
     public void setEncryptionKey(String encryptionKey, String lockscreenPassword, Context context) throws Exception {
         if (encryptionKey == null || encryptionKey.length() < 8) {
             throw new IllegalArgumentException(context.getString(R.string.invalid_key_length_error));
@@ -85,7 +88,6 @@ public class SettingsManager {
         String ivBase64 = preferences.getString("encryption_iv", null);
         String encryptedBase64 = preferences.getString("encrypted_encryption_key", null);
         if (encryptionSaltBase64 == null || ivBase64 == null || encryptedBase64 == null) {
-            // Устанавливаем ключ по умолчанию, если он отсутствует
             initializeDefaultEncryptionKey(context);
             encryptionSaltBase64 = preferences.getString("encryption_salt", null);
             ivBase64 = preferences.getString("encryption_iv", null);
@@ -120,7 +122,6 @@ public class SettingsManager {
             try {
                 setEncryptionKey(Constants.DEFAULT_ENCRYPTION_KEY, Constants.DEFAULT_LOCKSCREEN_PASSWORD, context);
             } catch (Exception e) {
-                // Логируем ошибку, но не прерываем выполнение
                 android.util.Log.e("SettingsManager", "Failed to set default encryption key", e);
             }
         }
