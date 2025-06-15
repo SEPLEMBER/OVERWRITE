@@ -60,10 +60,11 @@ public class SettingsActivity extends AppCompatActivity {
         EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
         EditText lockscreenPasswordTextBox = findViewById(R.id.passcodeEditText);
         EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEdit);
+        String lockscreenPassword;
 
         try {
             // Получаем пароль экрана блокировки из Intent
-            String lockscreenPassword = getIntent().getStringExtra("lockscreen_password");
+            lockscreenPassword = getIntent().getStringExtra("lockscreen_password");
             if (lockscreenPassword == null) {
                 // Если пароль не передан, используем дефолтный (для первой установки)
                 lockscreenPassword = Constants.DEFAULT_LOCKSCREEN_PASSWORD;
@@ -82,11 +83,10 @@ public class SettingsActivity extends AppCompatActivity {
             // Загружаем таймаут блокировки
             int timeout = SettingsManager.getInstance(this).getLockTimeout(this);
             lockTimeoutTextBox.setText(Integer.toString(timeout));
-
-            lockscreenPassword = "";
         } catch (Exception e) {
-            lockscreenPassword = "";
             Utilities.showErrorMessage(e.getMessage(), this);
+        } finally {
+            lockscreenPassword = "";
         }
     }
 }
