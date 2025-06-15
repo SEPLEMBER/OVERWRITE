@@ -1,68 +1,81 @@
 package com.aidinhut.simpletextcrypt;
 
 import android.util.Base64;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 
 public class Crypter {
+    private static final String TRANSFORMATION = "AES/GCM/NoPadding";
+    private static final int TAG_LENGTH_BIT = 128;
+    private static final int IV_LENGTH_BYTE = 12;
+    private static final int NONCE_BASE64_LENGTH = 16; // Base64-кодированный 12-байтный nonce
+    private static final Cipher cipher;
+    private static final SecretKeyFactory factory;
 
-    public static String encrypt(char[] password, String input)
-            throws UnsupportedEncodingException, GeneralSecurityException {
-        String nonce = getRandomNonce();
-        byte[] nonceBytes = Base64.decode(nonce, Base64.DEFAULT);
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, nonceBytes);
-        SecretKey secretKey = deriveKey(password, nonce);
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec);
-        byte[] encrypted = cipher.doFinal(input.getBytes());
-        return nonce + Base64.encodeToString(encrypted, Base64.DEFAULT);
-    }
-
-    public static String decrypt(char[] password, String input)
-            throws UnsupportedEncodingException, GeneralSecurityException {
-        String nonceOrIV = input.substring(0, input.length() >= 16 ? 16 : 12);
-        String encryptedMessage = input.substring(input.length() >= 16 ? 16 : 12);
-        SecretKey secretKey = deriveKey(password, nonceOrIV);
-
-        if (nonceOrIV.length() == 16) {
-            // Старый формат (CBC)
-            IvParameterSpec iv = new IvParameterSpec(nonceOrIV.getBytes("UTF-8"));
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-            byte[] original = cipher.doFinal(Base64.decode(encryptedMessage, Base64.DEFAULT));
-            return new String(original);
-        } else {
-            // Новый формат (GCM)
-            byte[] nonceBytes = Base64.decode(nonceOrIV, Base64.DEFAULT);
-            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, nonceBytes);
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec);
-            byte[] original = cipher.doFinal(Base64.decode(encryptedMessage, Base64.DEFAULT));
-            return new String(original);
+    static {
+        try {
+            cipher = Cipher.getInstance(TRANSFORMATION);
+            factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize crypto objects", e);
         }
     }
 
-    private static String getRandomNonce() {
-        SecureRandom random = new SecureRandom();
-        byte[] nonce = new byte[12];
-        random.nextBytes(nonce);
-        return Base64.encodeToString(nonce, Base64.NO_WRAP);
+    public static String encrypt(char[] password, String input) throws Exception {
+        if (input == null || input.isEmpty() || password == null || password.length == 0) {
+            throw new IllegalArgumentException("Input or password cannot be null or empty");
+        }
+
+        byte[] nonce = getRandomNonce();
+        String nonceBase64 = Base64.encodeToString(nonce, Base64.NO_WRAP);
+        SecretKey secretKey = deriveKey(password, nonceBase64);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, nonce));
+        byte[] encrypted = cipher.doFinal(input.getBytes(StandardCharsets.UTF_8));
+
+        return nonceBase64 + Base64.encodeToString(encrypted, Base64.DEFAULT);
     }
 
-    private static SecretKey deriveKey(char[] password, String salt)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        PBEKeySpec spec = new PBEKeySpec(password, salt.getBytes(), 100000, 256);
+    public static String decrypt(char[] password, String input) throws Exception {
+        if (input == null || input.length() < NONCE_BASE64_LENGTH) {
+            throw new IllegalArgumentException("Invalid input format");
+        }
+
+        String nonceBase64 = input.substring(0, NONCE_BASE64_LENGTH);
+        String encryptedMessage = input.substring(NONCE_BASE64_LENGTH);
+
+        byte[] nonce;
+        byte[] encrypted;
+        try {
+            nonce = Base64.decode(nonceBase64, Base64.DEFAULT);
+            encrypted = Base64.decode(encryptedMessage, Base64.DEFAULT);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid Base64 format");
+        }
+
+        if (nonce.length != IV_LENGTH_BYTE) {
+            throw new IllegalArgumentException("Invalid nonce length");
+        }
+
+        SecretKey secretKey = deriveKey(password, nonceBase64);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, nonce));
+        byte[] decrypted = cipher.doFinal(encrypted);
+        return new String(decrypted, StandardCharsets.UTF_8);
+    }
+
+    private static byte[] getRandomNonce() {
+        byte[] nonce = new byte[IV_LENGTH_BYTE];
+        new SecureRandom().nextBytes(nonce);
+        return nonce;
+    }
+
+    private static SecretKey deriveKey(char[] password, String salt) throws Exception {
+        PBEKeySpec spec = new PBEKeySpec(password, salt.getBytes(StandardCharsets.UTF_8), 100000, 256);
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
 }
