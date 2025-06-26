@@ -77,7 +77,7 @@ public class Crypter {
         char[] passwordChars = password.toCharArray();
 
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        KeySpec spec = new PBEKeySpec(passwordChars, salt.getBytes(), 50000, 256);
+        KeySpec spec = new PBEKeySpec(passwordChars, salt.getBytes(), 110000, 256);
 
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
