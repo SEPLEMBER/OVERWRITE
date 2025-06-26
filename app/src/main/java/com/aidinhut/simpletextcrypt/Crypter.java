@@ -20,7 +20,7 @@ public class Crypter {
     // Параметры
     private static final int SALT_LENGTH_BYTES       = 16;     // 128-бит соль
     private static final int IV_LENGTH_BYTES         = 16;     // 128-бит IV
-    private static final int PBKDF2_ITERATIONS       = 27_000;
+    private static final int PBKDF2_ITERATIONS       = 15_000;
     private static final int KEY_LENGTH_BITS         = 256;    // длина AES-ключа
     private static final String PBKDF2_ALGORITHM     = "PBKDF2WithHmacSHA1";
     private static final String CIPHER_ALGORITHM     = "AES/CBC/PKCS5Padding";
