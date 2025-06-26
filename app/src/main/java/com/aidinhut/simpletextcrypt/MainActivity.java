@@ -1,20 +1,3 @@
-/*
- * This file is part of SimpleTextCrypt.
- * Copyright (c) 2015-2020, Aidin Gharibnavaz <aidin@aidinhut.com>
- *
- * SimpleTextCrypt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SimpleTextCrypt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with SimpleTextCrypt.  If not, see <http://www.gnu.org/licenses/>.
- */
 package com.aidinhut.simpletextcrypt;
 
 import java.io.UnsupportedEncodingException;
@@ -33,13 +16,13 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.aidinhut.simpletextcrypt.exceptions.EncryptionKeyNotSet;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,6 +31,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Запрет скриншотов и снимков экрана в режиме “recent apps”
+        getWindow().setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        );
         setContentView(R.layout.activity_main);
         this.lastActivity = System.currentTimeMillis() / 1000;
     }
@@ -98,13 +86,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void onCopyButtonClicked(View view) {
         ClipboardManager clipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
-
         clipboard.setText(getText());
     }
 
     public void onPasteButtonClicked(View view) {
         ClipboardManager clipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
-
         if (clipboard.hasText()) {
             setText(clipboard.getText().toString());
         }
@@ -121,13 +107,11 @@ public class MainActivity extends AppCompatActivity {
         if (timeout != 0 && currentTime - lastActivity >= timeout * 60) {
             // Empty the text box, to protect privacy.
             setText("");
-
             // Finishing this activity, to get back to the lock screen.
             finish();
         } else {
             this.lastActivity = System.currentTimeMillis() / 1000;
         }
-
         super.onResume();
     }
 
@@ -138,11 +122,9 @@ public class MainActivity extends AppCompatActivity {
         if (timeout == 0 || currentTime - lastActivity >= timeout * 60) {
             // Empty the text box, to protect privacy.
             setText("");
-
             // Finishing this activity, to get back to the lock screen.
             finish();
         }
-
         super.onPause();
     }
 
@@ -169,11 +151,9 @@ public class MainActivity extends AppCompatActivity {
             GeneralSecurityException,
             EncryptionKeyNotSet {
         String encKey = SettingsManager.getInstance().getEncryptionKey(this);
-
-        if (encKey == "") {
+        if (encKey.isEmpty()) {
             throw new EncryptionKeyNotSet(this);
         }
-
         return encKey;
     }
 
