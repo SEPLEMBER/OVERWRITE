@@ -1,57 +1,26 @@
-/*
- * This file is part of SimpleTextCrypt.
- * Copyright (c) 2015-2020, Aidin Gharibnavaz <aidin@aidinhut.com>
- *
- * SimpleTextCrypt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SimpleTextCrypt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with SimpleTextCrypt.  If not, see <http://www.gnu.org/licenses/>.
- */
 package com.aidinhut.simpletextcrypt;
 
 import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.Random;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-/*
- * Provides methods for encrypting and decrypting data.
- */
 public class Crypter {
 
     public static String encrypt(String password, String input)
             throws UnsupportedEncodingException,
             GeneralSecurityException {
-
-        // IV (Initialization Vector) generates randomly, and sends along with the message.
-        // Since we use CBC mode, 1. IV *must* be unique in every message 2. IV does not need
-        // to be secret.
-        // See: https://stackoverflow.com/questions/3436864/sending-iv-along-with-cipher-text-safe
 
         String ivKey = getRandomIV();
         IvParameterSpec iv = new IvParameterSpec(ivKey.getBytes("UTF-8"));
@@ -69,7 +38,7 @@ public class Crypter {
     public static String decrypt(String password, String input)
             throws UnsupportedEncodingException,
             GeneralSecurityException {
-        // First 16 chars is the random IV.
+
         String ivKey = input.substring(0, 16);
         String encryptedMessage = input.substring(16);
 
@@ -86,30 +55,29 @@ public class Crypter {
     }
 
     /*
-     * Returns a random string of length 16 chars.
+     * Returns a cryptographically secure random string of 16 ASCII characters.
      */
     private static String getRandomIV() {
-        Random random = new Random();
+        SecureRandom secureRandom = new SecureRandom();
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < 16; ++i) {
-            builder.append((char)(random.nextInt(96) + 32));
+            builder.append((char) (secureRandom.nextInt(95) + 32)); // printable ASCII (32–126)
         }
 
         return builder.toString();
     }
 
     /*
-     * Derives a key from the specified password.
+     * Derives a key from the specified password using PBKDF2 with HMAC-SHA256.
      */
     private static SecretKey deriveKey(String password, String salt)
-        throws NoSuchAlgorithmException, InvalidKeySpecException
-    {
-        char[] passwordChars = new char[password.length()];
-        password.getChars(0, password.length(), passwordChars, 0);
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
 
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        KeySpec spec = new PBEKeySpec(passwordChars, salt.getBytes(), 2000, 256);
+        char[] passwordChars = password.toCharArray();
+
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        KeySpec spec = new PBEKeySpec(passwordChars, salt.getBytes(), 50000, 256);
 
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
