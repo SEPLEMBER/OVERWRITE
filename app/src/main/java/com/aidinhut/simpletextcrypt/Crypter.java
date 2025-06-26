@@ -3,11 +3,10 @@ package com.aidinhut.simpletextcrypt;
 import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -16,77 +15,103 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-/*
- * Provides methods for encrypting and decrypting data.
- * Исправлены:
- * 1. IV генерируется как 16 "сырых" байт через SecureRandom.
- * 2. Base64-вывод без переносов строк (NO_WRAP).
- * 3. Явно указана кодировка UTF-8.
- * 4. Соль (salt) для PBKDF2 — те же сырые 16 байт IV (можно вынести отдельно, но для минимальных правок оставлено так же).
- */
 public class Crypter {
 
-    // Длина IV в байтах
-    private static final int IV_LENGTH = 16;
-    // Число итераций PBKDF2
-    private static final int PBKDF2_ITERATIONS = 27000;
-    // Размер ключа в битах
-    private static final int KEY_LENGTH = 256;
+    // Параметры
+    private static final int SALT_LENGTH_BYTES       = 16;     // 128-бит соль
+    private static final int IV_LENGTH_BYTES         = 16;     // 128-бит IV
+    private static final int PBKDF2_ITERATIONS       = 27_000;
+    private static final int KEY_LENGTH_BITS         = 256;    // длина AES-ключа
+    private static final String PBKDF2_ALGORITHM     = "PBKDF2WithHmacSHA1";
+    private static final String CIPHER_ALGORITHM     = "AES/CBC/PKCS5Padding";
 
-    public static String encrypt(String password, String input)
-            throws UnsupportedEncodingException, GeneralSecurityException {
+    /**
+     * Шифрует строку.
+     * Возвращает строку в формате:
+     * Base64(salt) : Base64(iv) : Base64(ciphertext)
+     */
+    public static String encrypt(String password, String plaintext)
+            throws GeneralSecurityException {
 
-        // 1) Генерим 16 «сырых» байт для IV
-        byte[] ivBytes = new byte[IV_LENGTH];
+        // 1) Генерим соль
+        byte[] salt = new byte[SALT_LENGTH_BYTES];
         SecureRandom rnd = new SecureRandom();
+        rnd.nextBytes(salt);
+
+        // 2) Генерим IV
+        byte[] ivBytes = new byte[IV_LENGTH_BYTES];
         rnd.nextBytes(ivBytes);
         IvParameterSpec iv = new IvParameterSpec(ivBytes);
 
-        // 2) Деривация ключа на основе «сырых» байт IV как соли
-        SecretKey secretKey = deriveKey(password, ivBytes);
+        // 3) Деривация ключа
+        byte[] keyBytes = deriveKeyBytes(password, salt);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+        // Чистим keyBytes
+        java.util.Arrays.fill(keyBytes, (byte) 0);
 
-        // 3) Шифруем
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+        // 4) Шифруем
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-        byte[] encrypted = cipher.doFinal(input.getBytes("UTF-8"));
+        byte[] cipherBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
-        // 4) Составляем строку: Base64(IV) ∥ Base64(ciphertext), без переносов
-        String ivB64      = Base64.encodeToString(ivBytes,      Base64.NO_WRAP);
-        String cipherB64  = Base64.encodeToString(encrypted,    Base64.NO_WRAP);
-        return ivB64 + cipherB64;
-    }
+        // 5) Кодируем и пакуем
+        String sSalt   = Base64.encodeToString(salt,     Base64.NO_WRAP);
+        String sIv     = Base64.encodeToString(ivBytes,  Base64.NO_WRAP);
+        String sCipher = Base64.encodeToString(cipherBytes, Base64.NO_WRAP);
 
-    public static String decrypt(String password, String input)
-            throws UnsupportedEncodingException, GeneralSecurityException {
-        // 1) Извлекаем Base64(IV) — известно, что это 24 символа (16 байт → 24 Base64-знака без «=»)
-        String ivB64 = input.substring(0, 24);
-        String cipherB64 = input.substring(24);
-
-        byte[] ivBytes      = Base64.decode(ivB64,     Base64.NO_WRAP);
-        byte[] encrypted    = Base64.decode(cipherB64, Base64.NO_WRAP);
-        IvParameterSpec iv  = new IvParameterSpec(ivBytes);
-
-        // 2) Деривация ключа
-        SecretKey secretKey = deriveKey(password, ivBytes);
-
-        // 3) Расшифровка
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-        byte[] original = cipher.doFinal(encrypted);
-        return new String(original, "UTF-8");
+        return sSalt + ":" + sIv + ":" + sCipher;
     }
 
     /**
-     * Дериватит ключ из пароля и saltBytes (16 «сырых» байт IV).
+     * Расшифровывает строку из формата salt:iv:cipher.
      */
-    private static SecretKey deriveKey(String password, byte[] saltBytes)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static String decrypt(String password, String input)
+            throws GeneralSecurityException, UnsupportedEncodingException {
 
-        char[] passwordChars = password.toCharArray();
-        KeySpec spec = new PBEKeySpec(passwordChars, saltBytes, PBKDF2_ITERATIONS, KEY_LENGTH);
+        // 1) Разбираем на части
+        String[] parts = input.split(":", 3);
+        if (parts.length != 3) {
+            throw new IllegalArgumentException("Invalid encrypted data format");
+        }
 
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        byte[] keyBytes = factory.generateSecret(spec).getEncoded();
-        return new SecretKeySpec(keyBytes, "AES");
+        byte[] salt       = Base64.decode(parts[0], Base64.NO_WRAP);
+        byte[] ivBytes    = Base64.decode(parts[1], Base64.NO_WRAP);
+        byte[] cipherData = Base64.decode(parts[2], Base64.NO_WRAP);
+
+        if (salt.length != SALT_LENGTH_BYTES || ivBytes.length != IV_LENGTH_BYTES) {
+            throw new IllegalArgumentException("Invalid salt or IV length");
+        }
+
+        IvParameterSpec iv = new IvParameterSpec(ivBytes);
+
+        // 2) Деривация ключа
+        byte[] keyBytes = deriveKeyBytes(password, salt);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+        java.util.Arrays.fill(keyBytes, (byte) 0);
+
+        // 3) Расшифровка
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
+        byte[] plainBytes = cipher.doFinal(cipherData);
+
+        return new String(plainBytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Возвращает «сырые» байты AES-ключа, полученные через PBKDF2.
+     * После вызова нужно сразу затирать возвращённый массив.
+     */
+    private static byte[] deriveKeyBytes(String password, byte[] salt)
+            throws InvalidKeySpecException, GeneralSecurityException {
+        // Преобразуем пароль в char[]
+        char[] pwdChars = password.toCharArray();
+        try {
+            PBEKeySpec spec = new PBEKeySpec(pwdChars, salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
+            SecretKeyFactory f = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+            return f.generateSecret(spec).getEncoded();
+        } finally {
+            // Затираем пароль
+            java.util.Arrays.fill(pwdChars, '\0');
+        }
     }
 }
