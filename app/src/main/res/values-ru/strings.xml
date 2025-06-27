@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZER0LESS</string>
+    <string name="action_settings">Настройки</string>
+    <string name="action_about">О программе</string>
+    <string name="title_activity_lock">Блокировка</string>
+    <string name="title_activity_settings">Настройки</string>
+    <string name="invalid_key_error">Длина ключа должна быть не менее 3 символов.</string>
+    <string name="invalid_passcode_error">Пароль должен содержать не менее 2 символов.</string>
+    <string name="error_title">Ошибка</string>
+    <string name="settings_save_error">Не удалось сохранить настройки!</string>
+    <string name="no_encryption_key_set_error">Ключ шифрования не установлен. Проверьте настройки.</string>
+    <string name="unlockButtonText">Разблокировать</string>
+    <string name="wrong_passcode_error">Введен неверный пароль.</string>
+    <string name="encryption_key_label">Ключ шифрования (используйте сложный, например, "jn@32+iQm9")</string>
+    <string name="passcode_label">Пароль (для экрана блокировки)</string>
+    <string name="about_title">О ZER0LESS</string>
+    <string name="about_copyright">No Copyright, N.S.F.</string>
+    <string name="about_source">Исходный код будет на GitHub</string>
+    <string name="about_license_1">ZER0LESS — это свободное программное обеспечение: вы можете распространять и/или модифицировать его в соответствии с условиями GNU General Public License, опубликованной Free Software Foundation, либо версии 3 лицензии, либо (по вашему выбору) любой более поздней версии.</string>
+    <string name="about_license_2">«Ни одна система не безопасна». В информационной безопасности не может быть никаких гарантий. Только ZeroTrust.</string>
+    <string name="about_license_3">Копия GNU General Public License распространяется вместе с исходным кодом ZER0LESS. Вы также можете найти копию здесь: <a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
+    <string name="default_passcode">Пароль по умолчанию: 1111</string>
+    <string name="encrypt_button_text">Зашифровать</string>
+    <string name="decrypt_button_text">Расшифровать</string>
+    <string name="copy_button_text">Копировать</string>
+    <string name="paste_button_text">Вставить</string>
+    <string name="lock_timeout_label">Сохранять приложение разблокированным (в минутах)</string>
+    <string name="lock_timeout_help">Приложение будет заблокировано, если не было активности в течение нескольких минут. Установите 0 для немедленной блокировки.</string>
+    <string name="clear_button">Очистить</string>
+    <string name="save_button">Сохранить</string>
+    <string name="theme_label">Выбрать тему</string>
+    <string name="language_label">Выбрать язык</string>
+    <string name="encryption_key_hint">Введите ключ шифрования</string>
+    <string name="passcode_hint">Введите пароль</string>
+    <string name="lock_timeout_hint">Тайм-аут в минутах</string>
+    <string name="theme_language_warning">Изменение темы или языка требует перезапуска приложения.</string>
+</resources>
