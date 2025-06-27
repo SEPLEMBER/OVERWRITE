@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="theme_options">
+        <item>Светлая</item>
+        <item>Темная</item>
+        <item>AMOLED</item>
+    </string-array>
+    <string-array name="language_options">
+        <item>Русский</item>
+        <item>Украинский</item>
+        <item>Японский</item>
+        <item>Испанский</item>
+        <item>Немецкий</item>
+        <item>Итальянский</item>
+        <item>Французский</item>
+        <item>Английский</item>
+    </string-array>
+</resources>
