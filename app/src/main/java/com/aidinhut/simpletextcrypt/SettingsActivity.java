@@ -102,20 +102,43 @@ public class SettingsActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // Language Spinner (English only for now)
+        // Language Spinner
         Spinner languageSpinner = findViewById(R.id.languageSpinner);
         ArrayAdapter<CharSequence> languageAdapter = ArrayAdapter.createFromResource(
                 this, R.array.language_options, android.R.layout.simple_spinner_item);
         languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         languageSpinner.setAdapter(languageAdapter);
 
-        String language = prefs.getString(PREF_LANGUAGE, "en");
-        languageSpinner.setSelection("en".equals(language) ? 0 : 0); // Only English for now
+        String language = prefs.getString(PREF_LANGUAGE, "ru");
+        String[] languages = getResources().getStringArray(R.array.language_options);
+        for (int i = 0; i < languages.length; i++) {
+            if (languages[i].equalsIgnoreCase(language)) {
+                languageSpinner.setSelection(i);
+                break;
+            }
+        }
 
         languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedLanguage = "en"; // Only English for now
+                String selectedLang = parent.getItemAtPosition(position).toString();
+                if (selectedLang.equals("Русский") || selectedLang.equals("Russian")) {
+                    selectedLanguage = "ru";
+                } else if (selectedLang.equals("Украинский") || selectedLang.equals("Ukrainian")) {
+                    selectedLanguage = "uk";
+                } else if (selectedLang.equals("Японский") || selectedLang.equals("Japanese")) {
+                    selectedLanguage = "ja";
+                } else if (selectedLang.equals("Испанский") || selectedLang.equals("Spanish")) {
+                    selectedLanguage = "es";
+                } else if (selectedLang.equals("Немецкий") || selectedLang.equals("German")) {
+                    selectedLanguage = "de";
+                } else if (selectedLang.equals("Итальянский") || selectedLang.equals("Italian")) {
+                    selectedLanguage = "it";
+                } else if (selectedLang.equals("Французский") || selectedLang.equals("French")) {
+                    selectedLanguage = "fr";
+                } else if (selectedLang.equals("Английский") || selectedLang.equals("English")) {
+                    selectedLanguage = "en";
+                }
             }
 
             @Override
@@ -186,7 +209,7 @@ public class SettingsActivity extends AppCompatActivity {
             passcodeTextBox.setText(SettingsManager.getInstance().getPasscode(this));
             lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance().getLockTimeout(this)));
             selectedTheme = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_THEME, "light");
-            selectedLanguage = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_LANGUAGE, "en");
+            selectedLanguage = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_LANGUAGE, "ru");
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
         }
