@@ -34,4 +34,5 @@
     <string name="encryption_key_hint">Enter encryption key</string>
     <string name="passcode_hint">Enter passcode</string>
     <string name="lock_timeout_hint">Timeout in minutes</string>
+    <string name="theme_language_warning">Changing theme or language requires restarting the app.</string>
 </resources>
