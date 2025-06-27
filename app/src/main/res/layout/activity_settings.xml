@@ -138,7 +138,7 @@
 
         <Button
             android:layout_width="wrap_content"
-            android:layout_height="wrap_open"
+            android:layout_height="wrap_content"
             android:text="@string/save_button"
             android:onClick="onSaveClicked"
             style="@style/Widget.AppCompat.Button" />
