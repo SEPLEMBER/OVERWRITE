@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_light">#6B8E23</color> <!-- Olive green, light matte -->
+    <color name="primary_dark">#3C4F12</color> <!-- Dark olive, matte -->
+    <color name="background_light">#F5F5F5</color> <!-- Light matte background -->
+    <color name="background_dark">#2E2E2E</color> <!-- Dark matte background -->
+    <color name="text_light">#333333</color> <!-- Dark text for light theme -->
+    <color name="text_dark">#E0E0E0</color> <!-- Light text for dark theme -->
+    <color name="accent_light">#8FBC8F</color> <!-- Olive accent for buttons, light theme -->
+    <color name="accent_dark">#556B2F</color> <!-- Dark olive accent for buttons, dark theme -->
+</resources>
