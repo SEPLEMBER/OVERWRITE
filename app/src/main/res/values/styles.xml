@@ -12,6 +12,12 @@
         <item name="android:textColor">@color/text_dark</item>
         <item name="buttonStyle">@style/ButtonDark</item>
     </style>
+    <style name="AppTheme.Amoled" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/primary_amoled</item>
+        <item name="android:windowBackground">@color/background_amoled</item>
+        <item name="android:textColor">@color/text_dark</item>
+        <item name="buttonStyle">@style/ButtonDark</item>
+    </style>
     <style name="ButtonLight" parent="Widget.AppCompat.Button">
         <item name="backgroundTint">@color/accent_light</item>
         <item name="android:textColor">@color/text_light</item>
