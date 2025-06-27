@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZER0LESS</string>
+    <string name="action_settings">Налаштування</string>
+    <string name="action_about">Про програму</string>
+    <string name="title_activity_lock">Блокування</string>
+    <string name="title_activity_settings">Налаштування</string>
+    <string name="invalid_key_error">Довжина ключа має бути не менше 3 символів.</string>
+    <string name="invalid_passcode_error">Пароль має містити не менше 2 символів.</string>
+    <string name="error_title">Помилка</string>
+    <string name="settings_save_error">Не вдалося зберегти налаштування!</string>
+    <string name="no_encryption_key_set_error">Ключ шифрування не встановлено. Перевірте налаштування.</string>
+    <string name="unlockButtonText">Розблокувати</string>
+    <string name="wrong_passcode_error">Введено неправильний пароль.</string>
+    <string name="encryption_key_label">Ключ шифрування (використовуйте складний, наприклад, "jn@32+iQm9")</string>
+    <string name="passcode_label">Пароль (для екрана блокування)</string>
+    <string name="about_title">Про ZER0LESS</string>
+    <string name="about_copyright">Без авторських прав, N.S.F.</string>
+    <string name="about_source">Вихідний код буде доступний на GitHub</string>
+    <string name="about_license_1">ZER0LESS — це вільне програмне забезпечення: ви можете поширювати та/або модифікувати його відповідно до умов GNU General Public License, опублікованої Free Software Foundation, або версії 3 ліцензії, або (на ваш вибір) будь-якої пізнішої версії.</string>
+    <string name="about_license_2">«Жодна система не є безпечною». В інформаційній безпеці немає гарантій. Тільки ZeroTrust.</string>
+    <string name="about_license_3">Копія GNU General Public License поширюється разом із вихідним кодом ZER0LESS. Ви також можете знайти копію тут: <a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
+    <string name="default_passcode">Пароль за замовчуванням: 1111</string>
+    <string name="encrypt_button_text">Зашифрувати</string>
+    <string name="decrypt_button_text">Розшифрувати</string>
+    <string name="copy_button_text">Копіювати</string>
+    <string name="paste_button_text">Вставити</string>
+    <string name="lock_timeout_label">Залишати додаток розблокованим (у хвилинах)</string>
+    <string name="lock_timeout_help">Додаток буде заблоковано, якщо не було активності протягом кількох хвилин. Встановіть 0 для негайного блокування.</string>
+    <string name="clear_button">Очистити</string>
+    <string name="save_button">Зберегти</string>
+    <string name="theme_label">Вибрати тему</string>
+    <string name="language_label">Вибрати мову</string>
+    <string name="encryption_key_hint">Введіть ключ шифрування</string>
+    <string name="passcode_hint">Введіть пароль</string>
+    <string name="lock_timeout_hint">Тайм-аут у хвилинах</string>
+    <string name="theme_language_warning">Зміна теми або мови потребує перезапуску додатка.</string>
+</resources>
