@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZER0LESS</string>
+    <string name="action_settings">設定</string>
+    <string name="action_about">について</string>
+    <string name="title_activity_lock">ロック</string>
+    <string name="title_activity_settings">設定</string>
+    <string name="invalid_key_error">キーの長さは3文字以上でなければなりません。</string>
+    <string name="invalid_passcode_error">パスコードは2文字以上でなければなりません。</string>
+    <string name="error_title">エラー</string>
+    <string name="settings_save_error">設定を保存できませんでした！</string>
+    <string name="no_encryption_key_set_error">暗号化キーが設定されていません。設定を確認してください。</string>
+    <string name="unlockButtonText">ロック解除</string>
+    <string name="wrong_passcode_error">入力したパスコードが正しくありません。</string>
+    <string name="encryption_key_label">暗号化キー（複雑なものを使用してください、例: "jn@32+iQm9"）</string>
+    <string name="passcode_label">パスコード（ロック画面用）</string>
+    <string name="about_title">ZER0LESSについて</string>
+    <string name="about_copyright">著作権なし、N.S.F.</string>
+    <string name="about_source">ソースコードはGitHubで公開されます</string>
+    <string name="about_license_1">ZER0LESSはフリーソフトウェアです：Free Software Foundationが公開するGNU General Public Licenseの条件に従い、ライセンスのバージョン3、または（あなたの選択により）それ以降のバージョンの下で再配布および/または変更できます。</string>
+    <string name="about_license_2">「どのシステムも安全ではない。」情報セキュリティには保証がありません。ZeroTrustのみです。</string>
+    <string name="about_license_3">GNU General Public LicenseのコピーはZER0LESSのソースコードと一緒に配布されます。こちらでもコピーを見つけることができます：<a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
+    <string name="default_passcode">デフォルトのパスコードは1111です</string>
+    <string name="encrypt_button_text">暗号化</string>
+    <string name="decrypt_button_text">復号化</string>
+    <string name="copy_button_text">コピー</string>
+    <string name="paste_button_text">貼り付け</string>
+    <string name="lock_timeout_label">アプリをロック解除状態に保つ（分単位）</string>
+    <string name="lock_timeout_help">数分間活動がない場合、アプリがロックされます。即時ロックには0を設定してください。</string>
+    <string name="clear_button">クリア</string>
+    <string name="save_button">保存</string>
+    <string name="theme_label">テーマを選択</string>
+    <string name="language_label">言語を選択</string>
+    <string name="encryption_key_hint">暗号化キーを入力</string>
+    <string name="passcode_hint">パスコードを入力</string>
+    <string name="lock_timeout_hint">タイムアウト（分単位）</string>
+    <string name="theme_language_warning">テーマまたは言語の変更にはアプリの再起動が必要です。</string>
+</resources>
