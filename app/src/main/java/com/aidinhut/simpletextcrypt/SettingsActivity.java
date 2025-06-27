@@ -28,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.WindowManager;
 import java.util.Locale;
@@ -37,6 +38,8 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "AppPrefs";
     private static final String PREF_THEME = "theme";
     private static final String PREF_LANGUAGE = "language";
+    private String selectedTheme;
+    private String selectedLanguage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,8 @@ public class SettingsActivity extends AppCompatActivity {
         String theme = prefs.getString(PREF_THEME, "light");
         if (theme.equals("dark")) {
             setTheme(R.style.AppTheme_Dark);
+        } else if (theme.equals("amoled")) {
+            setTheme(R.style.AppTheme_Amoled);
         } else {
             setTheme(R.style.AppTheme);
         }
@@ -54,11 +59,17 @@ public class SettingsActivity extends AppCompatActivity {
                             WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_settings);
 
+        // Set warning text
+        TextView warningText = findViewById(R.id.themeLanguageWarning);
+        warningText.setText(R.string.theme_language_warning);
+
         setupSpinners();
         loadPreviousSettings();
     }
 
     private void setupSpinners() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        
         // Theme Spinner
         Spinner themeSpinner = findViewById(R.id.themeSpinner);
         ArrayAdapter<CharSequence> themeAdapter = ArrayAdapter.createFromResource(
@@ -66,17 +77,24 @@ public class SettingsActivity extends AppCompatActivity {
         themeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         themeSpinner.setAdapter(themeAdapter);
 
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String theme = prefs.getString(PREF_THEME, "light");
-        themeSpinner.setSelection(theme.equals("dark") ? 1 : 0);
+        if (theme.equals("dark")) {
+            themeSpinner.setSelection(1);
+        } else if (theme.equals("amoled")) {
+            themeSpinner.setSelection(2);
+        } else {
+            themeSpinner.setSelection(0);
+        }
 
         themeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedTheme = position == 0 ? "light" : "dark";
-                if (!prefs.getString(PREF_THEME, "light").equals(selectedTheme)) {
-                    prefs.edit().putString(PREF_THEME, selectedTheme).apply();
-                    recreate();
+                if (position == 0) {
+                    selectedTheme = "light";
+                } else if (position == 1) {
+                    selectedTheme = "dark";
+                } else {
+                    selectedTheme = "amoled";
                 }
             }
 
@@ -97,12 +115,7 @@ public class SettingsActivity extends AppCompatActivity {
         languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedLanguage = "en"; // Only English for now
-                if (!prefs.getString(PREF_LANGUAGE, "en").equals(selectedLanguage)) {
-                    prefs.edit().putString(PREF_LANGUAGE, selectedLanguage).apply();
-                    setLocale(selectedLanguage);
-                    recreate();
-                }
+                selectedLanguage = "en"; // Only English for now
             }
 
             @Override
@@ -132,18 +145,24 @@ public class SettingsActivity extends AppCompatActivity {
             return;
         }
 
-        // Saving settings.
+        // Saving settings
         try {
             SettingsManager.getInstance().setPasscode(passcodeTextBox.getText().toString(), this);
             SettingsManager.getInstance().setEncryptionKey(encryptionKeyTextBox.getText().toString(), this);
             SettingsManager.getInstance().setLockTimeout(lockTimeoutTextBox.getText().toString(), this);
+            
+            // Save theme and language
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_SYSTEM);
+            prefs.edit().putString(PREF_THEME, selectedTheme).apply();
+            prefs.edit().putString(PREF_LANGUAGE, selectedLanguage).apply();
+            setLocale(selectedLanguage);
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
             return;
         }
 
-        // Everything goes OK.
-        finish();
+        // Close the app
+        finishAffinity();
     }
 
     public void onKeyCleanClicked(View view) {
@@ -166,6 +185,8 @@ public class SettingsActivity extends AppCompatActivity {
             encryptionKeyTextBox.setText(SettingsManager.getInstance().getEncryptionKey(this));
             passcodeTextBox.setText(SettingsManager.getInstance().getPasscode(this));
             lockTimeoutTextBox.setText(Integer.toString(SettingsManager.getInstance().getLockTimeout(this)));
+            selectedTheme = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_THEME, "light");
+            selectedLanguage = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_LANGUAGE, "en");
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
         }
