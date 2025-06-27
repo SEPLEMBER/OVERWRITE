@@ -6,6 +6,13 @@
         <item>AMOLED</item>
     </string-array>
     <string-array name="language_options">
+        <item>Russian</item>
+        <item>Ukrainian</item>
+        <item>Japanese</item>
+        <item>Spanish</item>
+        <item>German</item>
+        <item>Italian</item>
+        <item>French</item>
         <item>English</item>
     </string-array>
 </resources>
