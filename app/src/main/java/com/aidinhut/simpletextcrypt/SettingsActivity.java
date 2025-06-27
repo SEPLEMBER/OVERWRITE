@@ -152,7 +152,7 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getInstance().setLockTimeout(lockTimeoutTextBox.getText().toString(), this);
             
             // Save theme and language
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_SYSTEM);
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
             prefs.edit().putString(PREF_THEME, selectedTheme).apply();
             prefs.edit().putString(PREF_LANGUAGE, selectedLanguage).apply();
             setLocale(selectedLanguage);
