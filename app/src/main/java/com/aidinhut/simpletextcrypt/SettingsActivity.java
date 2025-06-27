@@ -80,7 +80,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
 
-            @ threeOverride
+            @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
