@@ -37,8 +37,20 @@ import android.view.WindowManager;
 
 public class LockActivity extends AppCompatActivity {
 
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String PREF_THEME = "theme";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before setContentView
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String theme = prefs.getString(PREF_THEME, "light");
+        if (theme.equals("dark")) {
+            setTheme(R.style.AppTheme_Dark);
+        } else {
+            setTheme(R.style.AppTheme);
+        }
+
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, 
                             WindowManager.LayoutParams.FLAG_SECURE);
