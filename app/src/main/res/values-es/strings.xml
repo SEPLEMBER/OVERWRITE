@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZER0LESS</string>
+    <string name="action_settings">Configuración</string>
+    <string name="action_about">Acerca de</string>
+    <string name="title_activity_lock">Bloqueo</string>
+    <string name="title_activity_settings">Configuración</string>
+    <string name="invalid_key_error">La longitud de la clave debe ser de al menos 3 caracteres.</string>
+    <string name="invalid_passcode_error">La contraseña debe tener al menos 2 caracteres.</string>
+    <string name="error_title">Error</string>
+    <string name="settings_save_error">¡No se pudieron guardar las configuraciones!</string>
+    <string name="no_encryption_key_set_error">La clave de cifrado no está configurada. Verifica la configuración.</string>
+    <string name="unlockButtonText">Desbloquear</string>
+    <string name="wrong_passcode_error">Contraseña incorrecta ingresada.</string>
+    <string name="encryption_key_label">Clave de cifrado (usa una compleja, por ejemplo, "jn@32+iQm9")</string>
+    <string name="passcode_label">Contraseña (para la pantalla de bloqueo)</string>
+    <string name="about_title">Acerca de ZER0LESS</string>
+    <string name="about_copyright">Sin derechos de autor, N.S.F.</string>
+    <string name="about_source">El código fuente estará disponible en GitHub</string>
+    <string name="about_license_1">ZER0LESS es software libre: puedes redistribuirlo y/o modificarlo bajo los términos de la Licencia Pública General de GNU publicada por la Free Software Foundation, ya sea la versión 3 de la licencia, o (a tu elección) cualquier versión posterior.</string>
+    <string name="about_license_2">"Ningún sistema es seguro." En seguridad de la información, no hay garantías. Solo ZeroTrust.</string>
+    <string name="about_license_3">Una copia de la Licencia Pública General de GNU se distribuye con el código fuente de ZER0LESS. También puedes encontrar una copia aquí: <a>https://www.gnu.org/licenses/gpl-3.0.html</a></string>
+    <string name="default_passcode">La contraseña predeterminada es: 1111</string>
+    <string name="encrypt_button_text">Cifrar</string>
+    <string name="decrypt_button_text">Descifrar</string>
+    <string name="copy_button_text">Copiar</string>
+    <string name="paste_button_text">Pegar</string>
+    <string name="lock_timeout_label">Mantener la aplicación desbloqueada (en minutos)</string>
+    <string name="lock_timeout_help">La aplicación se bloqueará si no hay actividad durante unos minutos. Establece en 0 para bloqueo inmediato.</string>
+    <string name="clear_button">Limpiar</string>
+    <string name="save_button">Guardar</string>
+    <string name="theme_label">Elegir tema</string>
+    <string name="language_label">Elegir idioma</string>
+    <string name="encryption_key_hint">Ingresa la clave de cifrado</string>
+    <string name="passcode_hint">Ingresa la contraseña</string>
+    <string name="lock_timeout_hint">Tiempo de espera en minutos</string>
+    <string name="theme_language_warning">Cambiar el tema o el idioma requiere reiniciar la aplicación.</string>
+</resources>
