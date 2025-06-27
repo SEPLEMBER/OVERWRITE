@@ -31,4 +31,7 @@
     <string name="save_button">Save</string>
     <string name="theme_label">Choose Theme</string>
     <string name="language_label">Choose Language</string>
+    <string name="encryption_key_hint">Enter encryption key</string>
+    <string name="passcode_hint">Enter passcode</string>
+    <string name="lock_timeout_hint">Timeout in minutes</string>
 </resources>
