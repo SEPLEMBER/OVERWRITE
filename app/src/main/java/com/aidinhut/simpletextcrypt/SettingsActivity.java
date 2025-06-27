@@ -24,20 +24,98 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.WindowManager;
+import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String PREF_THEME = "theme";
+    private static final String PREF_LANGUAGE = "language";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before setContentView
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String theme = prefs.getString(PREF_THEME, "light");
+        if (theme.equals("dark")) {
+            setTheme(R.style.AppTheme_Dark);
+        } else {
+            setTheme(R.style.AppTheme);
+        }
+
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, 
                             WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_settings);
 
+        setupSpinners();
         loadPreviousSettings();
+    }
+
+    private void setupSpinners() {
+        // Theme Spinner
+        Spinner themeSpinner = findViewById(R.id.themeSpinner);
+        ArrayAdapter<CharSequence> themeAdapter = ArrayAdapter.createFromResource(
+                this, R.array.theme_options, android.R.layout.simple_spinner_item);
+        themeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        themeSpinner.setAdapter(themeAdapter);
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String theme = prefs.getString(PREF_THEME, "light");
+        themeSpinner.setSelection(theme.equals("dark") ? 1 : 0);
+
+        themeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedTheme = position == 0 ? "light" : "dark";
+                if (!prefs.getString(PREF_THEME, "light").equals(selectedTheme)) {
+                    prefs.edit().putString(PREF_THEME, selectedTheme).apply();
+                    recreate();
+                }
+            }
+
+            @ threeOverride
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // Language Spinner (English only for now)
+        Spinner languageSpinner = findViewById(R.id.languageSpinner);
+        ArrayAdapter<CharSequence> languageAdapter = ArrayAdapter.createFromResource(
+                this, R.array.language_options, android.R.layout.simple_spinner_item);
+        languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        languageSpinner.setAdapter(languageAdapter);
+
+        String language = prefs.getString(PREF_LANGUAGE, "en");
+        languageSpinner.setSelection("en".equals(language) ? 0 : 0); // Only English for now
+
+        languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedLanguage = "en"; // Only English for now
+                if (!prefs.getString(PREF_LANGUAGE, "en").equals(selectedLanguage)) {
+                    prefs.edit().putString(PREF_LANGUAGE, selectedLanguage).apply();
+                    setLocale(selectedLanguage);
+                    recreate();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void setLocale(String language) {
+        Locale locale = new Locale(language);
+        Locale.setDefault(locale);
+        android.content.res.Configuration config = new android.content.res.Configuration();
+        config.setLocale(locale);
+        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
     }
 
     public void onSaveClicked(View view) {
@@ -75,10 +153,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        // This activity won't lock. So, if the user send the app to the background while on
-        // the settings activity, anyone can get back to it without the need to enter passcode.
         finish();
-
         super.onPause();
     }
 
