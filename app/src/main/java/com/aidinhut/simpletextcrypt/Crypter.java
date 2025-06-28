@@ -23,7 +23,7 @@ public class Crypter {
     private static final int TAG_LENGTH_BITS      = 128;     // 128-бит тег
     private static final int PBKDF2_ITERATIONS    = 15_000;
     private static final int KEY_LENGTH_BITS      = 256;     // длина AES-ключа
-    private static final String PBKDF2_ALGORITHM  = "PBKDF2WithHmacSHA1";
+    private static final String PBKDF2_ALGORITHM  = "PBKDF2WithHmacSHA256";  // Обновлено на SHA-256
     private static final String CIPHER_ALGORITHM  = "AES/GCM/NoPadding";
 
     /**
