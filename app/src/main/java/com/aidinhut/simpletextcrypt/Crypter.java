@@ -125,4 +125,6 @@ public class Crypter {
 
         PBEKeySpec spec = new PBEKeySpec(password, salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
-        return factory.generateSecret(spec).get
+        return factory.generateSecret(spec).getEncoded();  // ← Была ошибка здесь
+    }
+}
