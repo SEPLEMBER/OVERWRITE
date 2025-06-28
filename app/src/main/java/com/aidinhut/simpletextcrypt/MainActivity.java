@@ -19,6 +19,7 @@ package com.aidinhut.simpletextcrypt;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+import java.util.Locale;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "AppPrefs";
     private static final String PREF_THEME = "theme";
+    private static final String PREF_LANGUAGE = "language";
     Long lastActivity;
 
     @Override
