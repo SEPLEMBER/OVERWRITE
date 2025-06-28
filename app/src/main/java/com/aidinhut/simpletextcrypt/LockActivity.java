@@ -19,6 +19,7 @@ package com.aidinhut.simpletextcrypt;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import java.util.Locale;
 
 import android.content.Context;
 import android.content.Intent;
@@ -34,12 +35,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.WindowManager;
-import java.util.Locale;
 
 public class LockActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "AppPrefs";
     private static final String PREF_THEME = "theme";
+    private static final String PREF_LANGUAGE = "language";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
