@@ -11,24 +11,25 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Crypter {
 
     // Параметры
-    private static final int SALT_LENGTH_BYTES       = 16;     // 128-бит соль
-    private static final int IV_LENGTH_BYTES         = 16;     // 128-бит IV
-    private static final int PBKDF2_ITERATIONS       = 15_000;
-    private static final int KEY_LENGTH_BITS         = 256;    // длина AES-ключа
-    private static final String PBKDF2_ALGORITHM     = "PBKDF2WithHmacSHA1";
-    private static final String CIPHER_ALGORITHM     = "AES/CBC/PKCS5Padding";
+    private static final int SALT_LENGTH_BYTES    = 16;      // 128-бит соль
+    private static final int IV_LENGTH_BYTES      = 12;      // 96-бит IV для GCM
+    private static final int TAG_LENGTH_BITS      = 128;     // 128-бит тег
+    private static final int PBKDF2_ITERATIONS    = 15_000;
+    private static final int KEY_LENGTH_BITS      = 256;     // длина AES-ключа
+    private static final String PBKDF2_ALGORITHM  = "PBKDF2WithHmacSHA1";
+    private static final String CIPHER_ALGORITHM  = "AES/GCM/NoPadding";
 
     /**
      * Шифрует строку.
      * Возвращает строку в формате:
-     * Base64(salt) : Base64(iv) : Base64(ciphertext)
+     * Base64(salt) : Base64(iv) : Base64(ciphertext||tag)
      */
     public static String encrypt(String password, String plaintext)
             throws GeneralSecurityException {
@@ -38,20 +39,19 @@ public class Crypter {
         SecureRandom rnd = new SecureRandom();
         rnd.nextBytes(salt);
 
-        // 2) Генерим IV
+        // 2) Генерим IV (96 бит)
         byte[] ivBytes = new byte[IV_LENGTH_BYTES];
         rnd.nextBytes(ivBytes);
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
 
         // 3) Деривация ключа
         byte[] keyBytes = deriveKeyBytes(password, salt);
         SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
-        // Чистим keyBytes
         java.util.Arrays.fill(keyBytes, (byte) 0);
 
-        // 4) Шифруем
+        // 4) Шифруем с GCMParameterSpec
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+        GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, ivBytes);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
         byte[] cipherBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
         // 5) Кодируем и пакуем
@@ -82,16 +82,15 @@ public class Crypter {
             throw new IllegalArgumentException("Invalid salt or IV length");
         }
 
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
-
         // 2) Деривация ключа
         byte[] keyBytes = deriveKeyBytes(password, salt);
         SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
         java.util.Arrays.fill(keyBytes, (byte) 0);
 
-        // 3) Расшифровка
+        // 3) Расшифровка с GCMParameterSpec
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
+        GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, ivBytes);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
         byte[] plainBytes = cipher.doFinal(cipherData);
 
         return new String(plainBytes, StandardCharsets.UTF_8);
@@ -103,14 +102,12 @@ public class Crypter {
      */
     private static byte[] deriveKeyBytes(String password, byte[] salt)
             throws InvalidKeySpecException, GeneralSecurityException {
-        // Преобразуем пароль в char[]
         char[] pwdChars = password.toCharArray();
         try {
             PBEKeySpec spec = new PBEKeySpec(pwdChars, salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
             SecretKeyFactory f = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             return f.generateSecret(spec).getEncoded();
         } finally {
-            // Затираем пароль
             java.util.Arrays.fill(pwdChars, '\0');
         }
     }
