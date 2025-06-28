@@ -40,8 +40,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply theme before setContentView
+        // Apply saved locale
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String language = prefs.getString(PREF_LANGUAGE, "ru");
+        setLocale(language);
+
+        // Apply theme before setContentView
         String theme = prefs.getString(PREF_THEME, "light");
         if (theme.equals("dark")) {
             setTheme(R.style.AppTheme_Dark);
@@ -107,9 +111,9 @@ public class SettingsActivity extends AppCompatActivity {
         languageSpinner.setAdapter(languageAdapter);
 
         String language = prefs.getString(PREF_LANGUAGE, "ru");
-        String[] languages = getResources().getStringArray(R.array.language_options);
-        for (int i = 0; i < languages.length; i++) {
-            if (language.equals(languages[i].toLowerCase())) {
+        String[] languageCodes = {"ru", "uk", "ja", "es", "de", "it", "fr", "en"};
+        for (int i = 0; i < languageCodes.length; i++) {
+            if (language.equals(languageCodes[i])) {
                 languageSpinner.setSelection(i);
                 break;
             }
@@ -118,24 +122,8 @@ public class SettingsActivity extends AppCompatActivity {
         languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedLang = parent.getItemAtPosition(position).toString();
-                if (selectedLang.equals("Русский") || selectedLang.equals("Russian")) {
-                    selectedLanguage = "ru";
-                } else if (selectedLang.equals("Украинский") || selectedLang.equals("Ukrainian")) {
-                    selectedLanguage = "uk";
-                } else if (selectedLang.equals("Японский") || selectedLang.equals("Japanese")) {
-                    selectedLanguage = "ja";
-                } else if (selectedLang.equals("Испанский") || selectedLang.equals("Spanish")) {
-                    selectedLanguage = "es";
-                } else if (selectedLang.equals("Немецкий") || selectedLang.equals("German")) {
-                    selectedLanguage = "de";
-                } else if (selectedLang.equals("Итальянский") || selectedLang.equals("Italian")) {
-                    selectedLanguage = "it";
-                } else if (selectedLang.equals("Французский") || selectedLang.equals("French")) {
-                    selectedLanguage = "fr";
-                } else if (selectedLang.equals("Английский") || selectedLang.equals("English")) {
-                    selectedLanguage = "en";
-                }
+                String[] languageCodes = {"ru", "uk", "ja", "es", "de", "it", "fr", "en"};
+                selectedLanguage = languageCodes[position];
             }
 
             @Override
