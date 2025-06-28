@@ -1,19 +1,19 @@
 /*
- * This file is part of SimpleTextCrypt.
+ * This file is part of ZER0LESS.
  * Copyright (c) 2015-2020, Aidin Gharibnavaz <aidin@aidinhut.com>
  *
- * SimpleTextCrypt is free software: you can redistribute it and/or modify
+ * ZER0LESS is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * SimpleTextCrypt is distributed in the hope that it will be useful,
+ * ZER0LESS is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with SimpleTextCrypt.  If not, see <http://www.gnu.org/licenses/>.
+ * along with ZER0LESS.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.aidinhut.simpletextcrypt;
 
@@ -47,6 +47,8 @@ public class LockActivity extends AppCompatActivity {
         String theme = prefs.getString(PREF_THEME, "light");
         if (theme.equals("dark")) {
             setTheme(R.style.AppTheme_Dark);
+        } else if (theme.equals("amoled")) {
+            setTheme(R.style.AppTheme_Amoled);
         } else {
             setTheme(R.style.AppTheme);
         }
