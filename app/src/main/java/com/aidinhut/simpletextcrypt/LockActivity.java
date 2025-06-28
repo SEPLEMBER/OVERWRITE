@@ -34,6 +34,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.WindowManager;
+import java.util.Locale;
 
 public class LockActivity extends AppCompatActivity {
 
@@ -42,8 +43,12 @@ public class LockActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply theme before setContentView
+        // Apply saved locale
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String language = prefs.getString(PREF_LANGUAGE, "ru");
+        setLocale(language);
+
+        // Apply theme before setContentView
         String theme = prefs.getString(PREF_THEME, "light");
         if (theme.equals("dark")) {
             setTheme(R.style.AppTheme_Dark);
@@ -71,6 +76,14 @@ public class LockActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    private void setLocale(String language) {
+        Locale locale = new Locale(language);
+        Locale.setDefault(locale);
+        android.content.res.Configuration config = new android.content.res.Configuration();
+        config.setLocale(locale);
+        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
     }
 
     public void onUnlockButtonClicked(View view) {
