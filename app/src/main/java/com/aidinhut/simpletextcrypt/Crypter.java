@@ -25,6 +25,18 @@ public class Crypter {
     private static final String CIPHER_ALGORITHM  = "AES/GCM/NoPadding";
     private static final String FORMAT_VERSION    = "v1";
 
+    // === Перегрузка: удобный интерфейс для String паролей ===
+    public static String encrypt(String password, String plaintext)
+            throws GeneralSecurityException {
+        return encrypt(password != null ? password.toCharArray() : null, plaintext);
+    }
+
+    public static String decrypt(String password, String input)
+            throws GeneralSecurityException {
+        return decrypt(password != null ? password.toCharArray() : null, input);
+    }
+
+    // === Основные безопасные методы с char[] ===
     public static String encrypt(char[] password, String plaintext)
             throws GeneralSecurityException {
 
@@ -49,7 +61,6 @@ public class Crypter {
             GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
 
-            // AAD включает в себя версию, соль и IV
             cipher.updateAAD(FORMAT_VERSION.getBytes(StandardCharsets.UTF_8));
             cipher.updateAAD(salt);
             cipher.updateAAD(iv);
@@ -96,7 +107,6 @@ public class Crypter {
             GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, iv);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
 
-            // AAD должен быть идентичен шифрованию
             cipher.updateAAD(FORMAT_VERSION.getBytes(StandardCharsets.UTF_8));
             cipher.updateAAD(salt);
             cipher.updateAAD(iv);
@@ -115,6 +125,4 @@ public class Crypter {
 
         PBEKeySpec spec = new PBEKeySpec(password, salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
-        return factory.generateSecret(spec).getEncoded();
-    }
-}
+        return factory.generateSecret(spec).get
