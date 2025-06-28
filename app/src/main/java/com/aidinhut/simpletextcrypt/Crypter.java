@@ -1,377 +1,235 @@
 package com.aidinhut.simpletextcrypt;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
+import android.util.Base64;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
-public class SettingsManager {
-    
-    private static final String TAG = "SettingsManager";
-    private static final String PREFS_NAME = "SimpleTextCryptPrefs";
-    private static final String KEY_ENCRYPTED_PASSCODE = "encrypted_passcode";
-    private static final String KEY_ENCRYPTED_DATA = "encrypted_data_";
-    
-    private final SharedPreferences prefs;
-    private String passcode;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
-    public SettingsManager(Context context) {
-        this.prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-    }
+public class Crypter {
+
+    // Параметры алгоритмов (БЕЗ ИЗМЕНЕНИЙ)
+    private static final int SALT_LENGTH_BYTES    = 16;       // 128-битная соль
+    private static final int IV_LENGTH_BYTES      = 12;       // 96-битный IV для GCM
+    private static final int TAG_LENGTH_BITS      = 128;      // 128-битный тег аутентичности
+    private static final int PBKDF2_ITERATIONS    = 45000;    // Настраиваемое число итераций
+    private static final int KEY_LENGTH_BITS      = 256;      // AES-256
+    private static final String PBKDF2_ALGORITHM  = "PBKDF2WithHmacSHA256";
+    private static final String CIPHER_ALGORITHM  = "AES/GCM/NoPadding";
+    private static final String FORMAT_VERSION    = "v1";     // Версионирование формата
 
     /**
-     * Устанавливает пасскод для шифрования
+     * Шифрует строку.
+     * Формат: v1:Base64(salt):Base64(iv):Base64(ciphertext)
      */
-    public boolean setPasscode(String passcode) {
-        if (passcode == null || passcode.trim().isEmpty()) {
-            Log.e(TAG, "Passcode cannot be null or empty");
-            return false;
+    public static String encrypt(String password, String plaintext)
+            throws GeneralSecurityException {
+
+        // ДОБАВЛЕНО: валидация входных параметров
+        if (password == null || plaintext == null) {
+            throw new IllegalArgumentException("Password and plaintext cannot be null");
         }
-        
+        if (plaintext.isEmpty()) {
+            throw new IllegalArgumentException("Plaintext cannot be empty");
+        }
+
+        SecureRandom rnd = new SecureRandom();
+
+        byte[] salt = new byte[SALT_LENGTH_BYTES];
+        rnd.nextBytes(salt);
+
+        byte[] ivBytes = new byte[IV_LENGTH_BYTES];
+        rnd.nextBytes(ivBytes);
+
+        byte[] keyBytes = deriveKeyBytes(password, salt);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+
         try {
-            // Шифруем пасскод самим собой для проверки
-            String encryptedPasscode = Crypter.encrypt(passcode, passcode);
-            
-            prefs.edit()
-                .putString(KEY_ENCRYPTED_PASSCODE, encryptedPasscode)
-                .apply();
-            
-            this.passcode = passcode;
-            return true;
-            
-        } catch (Crypter.CryptoException e) {
-            Log.e(TAG, "Failed to set passcode", e);
-            return false;
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, ivBytes);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
+
+            // ИСПРАВЛЕНО: включен AAD для дополнительной защиты
+            cipher.updateAAD(FORMAT_VERSION.getBytes(StandardCharsets.UTF_8));
+
+            byte[] cipherBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+
+            return FORMAT_VERSION + ":" +
+                   Base64.encodeToString(salt, Base64.NO_WRAP) + ":" +
+                   Base64.encodeToString(ivBytes, Base64.NO_WRAP) + ":" +
+                   Base64.encodeToString(cipherBytes, Base64.NO_WRAP);
+
+        } finally {
+            java.util.Arrays.fill(keyBytes, (byte) 0);
         }
     }
 
     /**
-     * Проверяет правильность пасскода
+     * Расшифровывает строку.
+     * Ожидается формат: v1:salt:iv:ciphertext
      */
-    public boolean verifyPasscode(String inputPasscode) {
-        if (inputPasscode == null || !hasPasscode()) {
-            return false;
+    public static String decrypt(String password, String input)
+            throws GeneralSecurityException, UnsupportedEncodingException {
+
+        // ДОБАВЛЕНО: валидация входных параметров
+        if (password == null || input == null) {
+            throw new IllegalArgumentException("Password and input cannot be null");
         }
-        
+
+        String[] parts = input.split(":", 4);
+        if (parts.length != 4 || !parts[0].equals("v1")) {
+            throw new IllegalArgumentException("Unsupported or invalid format");
+        }
+
+        byte[] salt    = Base64.decode(parts[1], Base64.NO_WRAP);
+        byte[] ivBytes = Base64.decode(parts[2], Base64.NO_WRAP);
+        byte[] cipherData = Base64.decode(parts[3], Base64.NO_WRAP);
+
+        if (salt.length != SALT_LENGTH_BYTES || ivBytes.length != IV_LENGTH_BYTES) {
+            throw new IllegalArgumentException("Invalid salt or IV length");
+        }
+
+        byte[] keyBytes = deriveKeyBytes(password, salt);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+
         try {
-            String storedEncryptedPasscode = prefs.getString(KEY_ENCRYPTED_PASSCODE, null);
-            if (storedEncryptedPasscode == null) {
-                return false;
-            }
-            
-            String decryptedPasscode = Crypter.decrypt(inputPasscode, storedEncryptedPasscode);
-            
-            // Безопасное сравнение
-            boolean isValid = constantTimeEquals(inputPasscode, decryptedPasscode);
-            
-            if (isValid) {
-                this.passcode = inputPasscode;
-            }
-            
-            return isValid;
-            
-        } catch (Crypter.CryptoException e) {
-            Log.e(TAG, "Failed to verify passcode", e);
-            return false;
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, ivBytes);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+
+            // ИСПРАВЛЕНО: включен AAD (должен совпадать с шифрованием)
+            cipher.updateAAD(parts[0].getBytes(StandardCharsets.UTF_8));
+
+            byte[] plainBytes = cipher.doFinal(cipherData);
+            return new String(plainBytes, StandardCharsets.UTF_8);
+
+        } finally {
+            java.util.Arrays.fill(keyBytes, (byte) 0);
         }
     }
 
+    // ДОБАВЛЕНО: методы для работы с byte arrays
     /**
-     * Проверяет, установлен ли пасскод
+     * Шифрует массив байт.
+     * Возвращает: версия(1 байт) + соль + IV + зашифрованные данные
      */
-    public boolean hasPasscode() {
-        return prefs.contains(KEY_ENCRYPTED_PASSCODE);
-    }
+    public static byte[] encryptBytes(String password, byte[] plaintext)
+            throws GeneralSecurityException {
 
-    /**
-     * Сохраняет зашифрованные данные
-     */
-    public boolean saveEncryptedData(String key, String data) {
-        if (!isUnlocked() || key == null || data == null) {
-            Log.e(TAG, "Cannot save data: not unlocked or invalid parameters");
-            return false;
+        if (password == null || plaintext == null) {
+            throw new IllegalArgumentException("Password and plaintext cannot be null");
         }
-        
+        if (plaintext.length == 0) {
+            throw new IllegalArgumentException("Plaintext cannot be empty");
+        }
+
+        SecureRandom rnd = new SecureRandom();
+
+        byte[] salt = new byte[SALT_LENGTH_BYTES];
+        rnd.nextBytes(salt);
+
+        byte[] ivBytes = new byte[IV_LENGTH_BYTES];
+        rnd.nextBytes(ivBytes);
+
+        byte[] keyBytes = deriveKeyBytes(password, salt);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+
         try {
-            String encryptedData = Crypter.encrypt(this.passcode, data);
-            
-            prefs.edit()
-                .putString(KEY_ENCRYPTED_DATA + key, encryptedData)
-                .apply();
-            
-            return true;
-            
-        } catch (Crypter.CryptoException e) {
-            Log.e(TAG, "Failed to save encrypted data for key: " + key, e);
-            return false;
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, ivBytes);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
+
+            cipher.updateAAD(FORMAT_VERSION.getBytes(StandardCharsets.UTF_8));
+
+            byte[] cipherBytes = cipher.doFinal(plaintext);
+
+            // Формат: версия_байт + соль + IV + зашифрованные_данные
+            byte[] result = new byte[1 + SALT_LENGTH_BYTES + IV_LENGTH_BYTES + cipherBytes.length];
+            int pos = 0;
+            result[pos++] = 1; // версия v1 как байт
+            System.arraycopy(salt, 0, result, pos, SALT_LENGTH_BYTES);
+            pos += SALT_LENGTH_BYTES;
+            System.arraycopy(ivBytes, 0, result, pos, IV_LENGTH_BYTES);
+            pos += IV_LENGTH_BYTES;
+            System.arraycopy(cipherBytes, 0, result, pos, cipherBytes.length);
+
+            return result;
+
+        } finally {
+            java.util.Arrays.fill(keyBytes, (byte) 0);
         }
     }
 
     /**
-     * Загружает и расшифровывает данные
+     * Расшифровывает массив байт.
      */
-    public String loadDecryptedData(String key) {
-        if (!isUnlocked() || key == null) {
-            Log.e(TAG, "Cannot load data: not unlocked or invalid key");
-            return null;
+    public static byte[] decryptBytes(String password, byte[] input)
+            throws GeneralSecurityException {
+
+        if (password == null || input == null) {
+            throw new IllegalArgumentException("Password and input cannot be null");
         }
         
+        int minLength = 1 + SALT_LENGTH_BYTES + IV_LENGTH_BYTES + 16; // минимум для GCM тега
+        if (input.length < minLength) {
+            throw new IllegalArgumentException("Input too short");
+        }
+
+        int pos = 0;
+        byte version = input[pos++];
+        if (version != 1) {
+            throw new IllegalArgumentException("Unsupported version: " + version);
+        }
+
+        byte[] salt = new byte[SALT_LENGTH_BYTES];
+        System.arraycopy(input, pos, salt, 0, SALT_LENGTH_BYTES);
+        pos += SALT_LENGTH_BYTES;
+
+        byte[] ivBytes = new byte[IV_LENGTH_BYTES];
+        System.arraycopy(input, pos, ivBytes, 0, IV_LENGTH_BYTES);
+        pos += IV_LENGTH_BYTES;
+
+        byte[] cipherData = new byte[input.length - pos];
+        System.arraycopy(input, pos, cipherData, 0, cipherData.length);
+
+        byte[] keyBytes = deriveKeyBytes(password, salt);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+
         try {
-            String encryptedData = prefs.getString(KEY_ENCRYPTED_DATA + key, null);
-            if (encryptedData == null) {
-                return null;
-            }
-            
-            return Crypter.decrypt(this.passcode, encryptedData);
-            
-        } catch (Crypter.CryptoException e) {
-            Log.e(TAG, "Failed to load encrypted data for key: " + key, e);
-            return null;
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BITS, ivBytes);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+
+            cipher.updateAAD(FORMAT_VERSION.getBytes(StandardCharsets.UTF_8));
+
+            return cipher.doFinal(cipherData);
+
+        } finally {
+            java.util.Arrays.fill(keyBytes, (byte) 0);
         }
     }
 
     /**
-     * Проверяет, разблокирован ли менеджер настроек
+     * Генерация ключа через PBKDF2.
      */
-    public boolean isUnlocked() {
-        return this.passcode != null && !this.passcode.isEmpty();
-    }
-
-    /**
-     * Блокирует доступ (очищает пасскод из памяти)
-     */
-    public void lock() {
-        if (this.passcode != null) {
-            // Безопасная очистка пасскода из памяти
-            char[] chars = this.passcode.toCharArray();
-            java.util.Arrays.fill(chars, '\0');
-            this.passcode = null;
-        }
-    }
-
-    /**
-     * Удаляет все сохраненные данные
-     */
-    public boolean clearAllData() {
+    private static byte[] deriveKeyBytes(String password, byte[] salt)
+            throws InvalidKeySpecException, GeneralSecurityException {
+        char[] pwdChars = password.toCharArray();
         try {
-            prefs.edit().clear().apply();
-            lock();
-            return true;
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to clear all data", e);
-            return false;
+            PBEKeySpec spec = new PBEKeySpec(pwdChars, salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
+            SecretKeyFactory f = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+            return f.generateSecret(spec).getEncoded();
+        } finally {
+            java.util.Arrays.fill(pwdChars, '\0');
         }
-    }
-
-    /**
-     * Удаляет конкретный ключ
-     */
-    public boolean removeData(String key) {
-        if (key == null) {
-            return false;
-        }
-        
-        try {
-            prefs.edit()
-                .remove(KEY_ENCRYPTED_DATA + key)
-                .apply();
-            return true;
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to remove data for key: " + key, e);
-            return false;
-        }
-    }
-
-    /**
-     * Получает список всех сохраненных ключей
-     */
-    public java.util.Set<String> getSavedKeys() {
-        java.util.Set<String> allKeys = prefs.getAll().keySet();
-        java.util.Set<String> dataKeys = new java.util.HashSet<>();
-        
-        String prefix = KEY_ENCRYPTED_DATA;
-        for (String key : allKeys) {
-            if (key.startsWith(prefix)) {
-                dataKeys.add(key.substring(prefix.length()));
-            }
-        }
-        
-        return dataKeys;
-    }
-
-    /**
-     * Проверяет существование ключа
-     */
-    public boolean hasKey(String key) {
-        if (key == null) {
-            return false;
-        }
-        return prefs.contains(KEY_ENCRYPTED_DATA + key);
-    }
-
-    /**
-     * Изменяет пасскод (перешифровывает все данные)
-     */
-    public boolean changePasscode(String oldPasscode, String newPasscode) {
-        if (!verifyPasscode(oldPasscode)) {
-            Log.e(TAG, "Old passcode verification failed");
-            return false;
-        }
-        
-        if (newPasscode == null || newPasscode.trim().isEmpty()) {
-            Log.e(TAG, "New passcode cannot be null or empty");
-            return false;
-        }
-        
-        try {
-            // Получаем все сохраненные ключи
-            java.util.Set<String> keys = getSavedKeys();
-            java.util.Map<String, String> decryptedData = new java.util.HashMap<>();
-            
-            // Расшифровываем все данные старым паролем
-            for (String key : keys) {
-                String data = loadDecryptedData(key);
-                if (data != null) {
-                    decryptedData.put(key, data);
-                }
-            }
-            
-            // Устанавливаем новый пасскод
-            if (!setPasscode(newPasscode)) {
-                return false;
-            }
-            
-            // Зашифровываем все данные новым паролем
-            boolean allSuccess = true;
-            for (java.util.Map.Entry<String, String> entry : decryptedData.entrySet()) {
-                if (!saveEncryptedData(entry.getKey(), entry.getValue())) {
-                    Log.e(TAG, "Failed to re-encrypt data for key: " + entry.getKey());
-                    allSuccess = false;
-                }
-            }
-            
-            // Очищаем расшифрованные данные из памяти
-            decryptedData.clear();
-            
-            return allSuccess;
-            
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to change passcode", e);
-            return false;
-        }
-    }
-
-    /**
-     * Экспортирует все данные в зашифрованном виде
-     */
-    public String exportData() {
-        if (!isUnlocked()) {
-            return null;
-        }
-        
-        try {
-            java.util.Map<String, ?> allPrefs = prefs.getAll();
-            org.json.JSONObject jsonObject = new org.json.JSONObject();
-            
-            for (java.util.Map.Entry<String, ?> entry : allPrefs.entrySet()) {
-                jsonObject.put(entry.getKey(), entry.getValue().toString());
-            }
-            
-            return jsonObject.toString();
-            
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to export data", e);
-            return null;
-        }
-    }
-
-    /**
-     * Импортирует данные из строки JSON
-     */
-    public boolean importData(String jsonData) {
-        if (!isUnlocked() || jsonData == null) {
-            return false;
-        }
-        
-        try {
-            org.json.JSONObject jsonObject = new org.json.JSONObject(jsonData);
-            SharedPreferences.Editor editor = prefs.edit();
-            
-            java.util.Iterator<String> keys = jsonObject.keys();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                String value = jsonObject.getString(key);
-                editor.putString(key, value);
-            }
-            
-            editor.apply();
-            return true;
-            
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to import data", e);
-            return false;
-        }
-    }
-
-    /**
-     * Безопасное сравнение строк (защита от timing attacks)
-     */
-    private boolean constantTimeEquals(String a, String b) {
-        if (a == null || b == null) {
-            return a == b;
-        }
-        
-        if (a.length() != b.length()) {
-            return false;
-        }
-        
-        int result = 0;
-        for (int i = 0; i < a.length(); i++) {
-            result |= a.charAt(i) ^ b.charAt(i);
-        }
-        
-        return result == 0;
-    }
-
-    /**
-     * Проверяет целостность всех сохраненных данных
-     */
-    public boolean verifyDataIntegrity() {
-        if (!isUnlocked()) {
-            return false;
-        }
-        
-        try {
-            java.util.Set<String> keys = getSavedKeys();
-            
-            for (String key : keys) {
-                String encryptedData = prefs.getString(KEY_ENCRYPTED_DATA + key, null);
-                if (encryptedData != null && !Crypter.verifyIntegrity(this.passcode, encryptedData)) {
-                    Log.w(TAG, "Data integrity check failed for key: " + key);
-                    return false;
-                }
-            }
-            
-            return true;
-            
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to verify data integrity", e);
-            return false;
-        }
-    }
-
-    /**
-     * Получает статистику использования
-     */
-    public java.util.Map<String, Object> getStats() {
-        java.util.Map<String, Object> stats = new java.util.HashMap<>();
-        
-        stats.put("hasPasscode", hasPasscode());
-        stats.put("isUnlocked", isUnlocked());
-        stats.put("totalKeys", getSavedKeys().size());
-        stats.put("dataIntegrityOk", isUnlocked() ? verifyDataIntegrity() : false);
-        
-        return stats;
     }
 }
