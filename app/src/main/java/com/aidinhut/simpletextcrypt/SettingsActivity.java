@@ -1,28 +1,25 @@
 /*
- * This file is part of SimpleTextCrypt.
+ * This file is part of ZER0LESS.
  * Copyright (c) 2015-2020, Aidin Gharibnavaz <aidin@aidinhut.com>
  *
- * SimpleTextCrypt is free software: you can redistribute it and/or modify
+ * ZER0LESS is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * SimpleTextCrypt is distributed in the hope that it will be useful,
+ * ZER0LESS is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with SimpleTextCrypt.  If not, see <http://www.gnu.org/licenses/>.
+ * along with ZER0LESS.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.aidinhut.simpletextcrypt;
 
-import android.app.AlertDialog;
-import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -112,7 +109,7 @@ public class SettingsActivity extends AppCompatActivity {
         String language = prefs.getString(PREF_LANGUAGE, "ru");
         String[] languages = getResources().getStringArray(R.array.language_options);
         for (int i = 0; i < languages.length; i++) {
-            if (languages[i].equalsIgnoreCase(language)) {
+            if (language.equals(languages[i].toLowerCase())) {
                 languageSpinner.setSelection(i);
                 break;
             }
@@ -155,9 +152,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void onSaveClicked(View view) {
-        EditText encryptionKeyTextBox = (EditText)findViewById(R.id.encryptionKeyEditText);
-        EditText passcodeTextBox = (EditText)findViewById(R.id.passcodeEditText);
-        EditText lockTimeoutTextBox = (EditText)findViewById(R.id.lockTimeoutEditText);
+        EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
+        EditText passcodeTextBox = findViewById(R.id.passcodeEditText);
+        EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEditText);
 
         if (encryptionKeyTextBox.getText().toString().length() < 3) {
             Utilities.showErrorMessage(getString(R.string.invalid_key_error), this);
@@ -178,18 +175,23 @@ public class SettingsActivity extends AppCompatActivity {
             SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
             prefs.edit().putString(PREF_THEME, selectedTheme).apply();
             prefs.edit().putString(PREF_LANGUAGE, selectedLanguage).apply();
+            
+            // Apply new locale
             setLocale(selectedLanguage);
+            
+            // Restart the app
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            finishAffinity();
+            startActivity(intent);
         } catch (Exception error) {
             Utilities.showErrorMessage(error.getMessage(), this);
             return;
         }
-
-        // Close the app
-        finishAffinity();
     }
 
     public void onKeyCleanClicked(View view) {
-        EditText encryptionKeyTextBox = (EditText)findViewById(R.id.encryptionKeyEditText);
+        EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
         encryptionKeyTextBox.setText("");
     }
 
@@ -200,9 +202,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void loadPreviousSettings() {
-        EditText encryptionKeyTextBox = (EditText)findViewById(R.id.encryptionKeyEditText);
-        EditText passcodeTextBox = (EditText)findViewById(R.id.passcodeEditText);
-        EditText lockTimeoutTextBox = (EditText)findViewById(R.id.lockTimeoutEditText);
+        EditText encryptionKeyTextBox = findViewById(R.id.encryptionKeyEditText);
+        EditText passcodeTextBox = findViewById(R.id.passcodeEditText);
+        EditText lockTimeoutTextBox = findViewById(R.id.lockTimeoutEditText);
 
         try {
             encryptionKeyTextBox.setText(SettingsManager.getInstance().getEncryptionKey(this));
