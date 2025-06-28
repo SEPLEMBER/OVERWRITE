@@ -19,7 +19,7 @@ public class Crypter {
     private static final int SALT_LENGTH_BYTES    = 16;
     private static final int IV_LENGTH_BYTES      = 12;
     private static final int TAG_LENGTH_BITS      = 128;
-    private static final int PBKDF2_ITERATIONS    = 45000;
+    private static final int PBKDF2_ITERATIONS    = 110000;
     private static final int KEY_LENGTH_BITS      = 256;
     private static final String PBKDF2_ALGORITHM  = "PBKDF2WithHmacSHA256";
     private static final String CIPHER_ALGORITHM  = "AES/GCM/NoPadding";
