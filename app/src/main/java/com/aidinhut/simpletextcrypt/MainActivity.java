@@ -48,8 +48,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply theme before setContentView
+        // Apply saved locale
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String language = prefs.getString(PREF_LANGUAGE, "ru");
+        setLocale(language);
+
+        // Apply theme before setContentView
         String theme = prefs.getString(PREF_THEME, "light");
         if (theme.equals("dark")) {
             setTheme(R.style.AppTheme_Dark);
@@ -64,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
                             WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_main);
         this.lastActivity = System.currentTimeMillis() / 1000;
+    }
+
+    private void setLocale(String language) {
+        Locale locale = new Locale(language);
+        Locale.setDefault(locale);
+        android.content.res.Configuration config = new android.content.res.Configuration();
+        config.setLocale(locale);
+        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
     }
 
     @Override
